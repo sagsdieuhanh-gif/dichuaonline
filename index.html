@@ -290,7 +290,7 @@ function drawSeated(person,t){const {spot}=person;const p=project(spot.x,.05,spo
 function drawStanding(x,z,gender,skin,t,isPlayer=false){const p=project(x,.03,z);if(!p)return;let h=clamp(p.s*(isPlayer?2.2:2.45),3,950),w=h*.6;
  ctx.fillStyle='rgba(24,12,9,.43)';ctx.beginPath();ctx.ellipse(p.x,p.y+h*.012,Math.min(p.s*.55,110),Math.min(p.s*.16,30),0,0,7);ctx.fill();
  const sway=isPlayer&&game.playing?Math.sin(game.walkPhase*3)*Math.min(p.s*.045,6):Math.sin(t*1.4+x)*Math.min(p.s*.012,2);
- const spriteKind=(isPlayer?game.playing:true)?'walk'+Math.floor((((isPlayer?game.walkPhase:t*3+x*3)%Math.PI/2/Math.PI+1)%1)*6):'stand';
+ const spriteKind=(isPlayer?game.playing:true)?'walk'+((Math.floor((isPlayer?game.walkPhase:t*3+x*3)*1.1)%6)+6)%6:'stand';
  ctx.drawImage(sprite(spriteKind,gender,skin),p.x-w/2+sway,p.y-h,w,h);
  if(isPlayer&&game.bowUntil>t){ctx.save();ctx.translate(p.x,p.y-h*.4);ctx.rotate(-.48);ctx.translate(-p.x,-(p.y-h*.4));ctx.drawImage(sprite('sit',gender,skin),p.x-w/2,p.y-h*.98,w,h*.85);ctx.restore()}
 }
