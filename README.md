@@ -1,4 +1,13 @@
-# AN LẠC ĐƯỜNG — V1.4 (31/10/2026)
+# AN LẠC ĐƯỜNG — V1.5 (31/10/2026)
+
+
+## V1.5 — Cảnh chánh điện và âm thanh
+
+- Chánh điện dùng nền cố định; nhân vật đi trên mặt phẳng sàn với góc nhìn từ phía sau. Động tác lạy có các tư thế quỳ, cúi, đứng dậy (mô phỏng sprite Canvas, chưa phải 3D rig).
+- **3 bản nhạc thiền nguyên bản trong `music/`:** `chuong-som-an-nhien.wav`, `sen-no-trong-tam.wav`, `huong-tram-tinh-lang.wav` — phát từ GitHub Pages không phải tìm file bên ngoài.
+- Các lựa chọn khác trong nút **♫**: Chú Đại Bi trích đoạn 6 câu đầu bằng giọng máy (không phải bản tụng đầy đủ), niệm A Di Đà Phật bằng giọng máy, Om Mani Padme Hum và Đà-la-ni bản thu mở (cần mạng).
+- Không đăng ký tài khoản. Trình duyệt di động có thể yêu cầu chạm vào nút phát để cấp quyền âm thanh.
+- Website hiện là mô phỏng 2.5D một người với các Phật tử mô phỏng, chưa có nhiều người thật cùng kết nối.
 
 **Website chùa online miễn phí, vào ngay không đăng ký:** https://sagsdieuhanh-gif.github.io/dichuaonline/
 
