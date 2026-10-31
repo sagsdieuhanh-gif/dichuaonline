@@ -1,4 +1,25 @@
-# AN LẠC ĐƯỜNG — V1.5 (31/10/2026)
+# AN LẠC ĐƯỜNG — V1.6 (bản sửa lỗi)
+
+Website: https://sagsdieuhanh-gif.github.io/dichuaonline/?v=1.6
+
+## Sửa lỗi V1.6
+
+- Chánh điện dùng nền chi tiết mới và **cố định**: không tự phóng to hoặc trôi theo chuyển động của nhân vật.
+- Bỏ thao tác vẽ khung hình cũ lên chính canvas đang hiển thị; tránh hình ảnh chồng/nhòe.
+- Nhân vật và 100 vị trí chỉ thay đổi tọa độ trên mặt phẳng sàn; giảm kích thước người ngồi để hạn chế đè lên nhau trên điện thoại.
+- **Dừng giọng đọc tự động** khi chưa kiểm chứng giọng Việt chuẩn; lời chào vẫn hiển thị trên màn hình. Không dùng TTS đọc Chú Đại Bi vì nguy cơ đọc sai âm.
+- Trình phát 3 bản nhạc thiền nguyên bản được nhúng trong `audio-player.js`, không phụ thuộc máy chủ âm thanh bên ngoài. Chỉ phát nhạc thiền khi vào chùa; tự chuyển giữa 3 bài.
+
+## Giới hạn hiện tại
+
+Đây là cảnh mô phỏng 2.5D, chưa phải game WebGL 3D hoặc 100 người thật realtime. Hoạt ảnh quỳ lạy là các tư thế tạo hình theo bước, không phải chuyển động xương 3D chuyên nghiệp. Chưa đưa bản thu Chú Đại Bi có người tụng vào vì chưa có nguồn được cấp phép và xác minh giọng đọc.
+
+## Kiểm thử
+
+Đã kiểm tra cú pháp JavaScript, sự tồn tại của asset nền, bộ ba MP3, số vị trí (100), phép chiếu ghế/người theo sàn và loại bỏ giọng máy đọc chú. Kiểm thử thao tác trực tiếp trên điện thoại thực tế vẫn chưa hoàn tất.
+
+---
+
 
 
 ## V1.5 — Cảnh chánh điện và âm thanh
