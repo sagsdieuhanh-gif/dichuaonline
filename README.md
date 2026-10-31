@@ -1,6 +1,11 @@
-# AN LẠC ĐƯỜNG — V1.3 (31/10/2026)
+# AN LẠC ĐƯỜNG — V1.4 (31/10/2026)
 
 **Website chùa online miễn phí, vào ngay không đăng ký:** https://sagsdieuhanh-gif.github.io/dichuaonline/
+
+## Sửa lỗi V1.4
+- Sửa lỗi chánh điện bị đẩy lên khỏi màn hình khi nhân vật đi tới gần bàn thờ: loại bỏ phép chiếu sai y=34; dùng nền cố định, giới hạn mức phóng to 1,43 lần.
+- Giữ tượng Phật ở trung tâm, nền chánh điện trong khung nhìn; giới hạn vùng vẽ phía trên sàn để tránh che lấp lối đi.
+- Giữ nguyên dữ liệu nhân vật, góc nhìn sau lưng, ghế ngồi và các thao tác, không yêu cầu tài khoản.
 
 ## Có gì trong V1.3?
 - **Chánh điện được neo tại một tọa độ cố định** trong thế giới mô phỏng; khi bạn đi tới gần, góc nhìn chuyển theo nhân vật tạo phối cảnh đến gần tượng Phật. Không sử dụng chuyển dịch giả của toàn cảnh theo hướng di chuyển.
