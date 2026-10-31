@@ -401,56 +401,7 @@ canvas.addEventListener('pointermove',e=>{if(!drag)return;game.look=0});
 canvas.addEventListener('pointerup',()=>{drag=null});canvas.addEventListener('pointercancel',()=>drag=null);
 $('#seatCount').textContent='100 vị trí · Phối cảnh cố định';
 })();
-
-/* An Lạc Đường — audio player V1.2. Recordings served from Wikimedia Commons;
-   attribution and licenses are in MUSIC-CREDITS.md. No tracking or account. */
-(() => {
-'use strict';
-const tracks = [
- {name:'Nhạc thiền không lời · Spiritual Ambient',kind:'NHẠC THIỀN',by:'MusicLFiles · CC BY 4.0',src:'https://upload.wikimedia.org/wikipedia/commons/e/e8/Spiritual_Ambient_by_MusicLFiles.ogg',url:'https://commons.wikimedia.org/wiki/File:Spiritual_Ambient_by_MusicLFiles.ogg'},
- {name:'Tụng Tam Quy · Buddham Saranam',kind:'TỤNG NIỆM',by:'Hariharan · CC0',src:'https://upload.wikimedia.org/wikipedia/commons/8/8d/Buddham_Saranam_Gacchami_-_Male_Voice%2C_with_Female_Chorus.oga',url:'https://commons.wikimedia.org/wiki/File:Buddham_Saranam_Gacchami_-_Male_Voice,_with_Female_Chorus.oga'},
- {name:'Tiếng tụng kinh tại chùa Linh Ẩn',kind:'TIẾNG CHÙA',by:'LouiseBrown1981 · CC BY-SA 3.0',src:'https://upload.wikimedia.org/wikipedia/commons/e/e1/Chanting_at_Lingyin_Temple%2C_Hangzhou.ogg',url:'https://commons.wikimedia.org/wiki/File:Chanting_at_Lingyin_Temple,_Hangzhou.ogg'}
-];
-const $=s=>document.querySelector(s);
-const audio=new Audio(); audio.preload='none'; audio.loop=false; audio.volume=.46;
-let current=0,enabled=false,localObject=null,lastError='';
-const panel=$('#musicPanel'),toggle=$('#musicToggle'),status=$('#musicStatus'),now=$('#musicTrackTitle'),credit=$('#musicCredit'),source=$('#musicSource'),selector=$('#musicTrackSelect'),volume=$('#musicVolume'),volText=$('#musicVolumeValue');
-if(!panel||!toggle||!selector) return;
-tracks.forEach((t,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=t.name;selector.append(o)});
-function updateUI(){const t=tracks[current];now.textContent=t.name;credit.textContent=t.by;source.href=t.url;source.textContent='Nguồn và giấy phép ↗';selector.value=String(current);toggle.textContent=audio.paused?'▶ Phát nhạc':'❚❚ Tạm dừng';$('#soundButton')?.setAttribute('aria-label',audio.paused?'Mở trình phát nhạc thiền':'Đang phát nhạc · Mở điều khiển');$('#soundButton')?.classList.toggle('music-active',!audio.paused);}
-function message(s,warning=false){status.textContent=s;status.classList.toggle('music-warn',warning)}
-function open(){panel.classList.remove('hidden');$('#soundButton')?.setAttribute('aria-expanded','true');}
-function close(){panel.classList.add('hidden');$('#soundButton')?.setAttribute('aria-expanded','false')}
-function preferMP3(src){if(src.startsWith('https://upload.wikimedia.org/wikipedia/commons/') && !audio.canPlayType('audio/ogg; codecs=\"vorbis\"')){const rest=src.split('/commons/')[1];return 'https://upload.wikimedia.org/wikipedia/commons/transcoded/'+rest+'/'+rest.split('/').slice(-1)[0]+'.mp3'}return src;}
-function setupSource(){if(localObject){audio.src=localObject;return;}const t=tracks[current];audio.src=preferMP3(t.src);audio.load()}
-async function play(){
- enabled=true;
- if(!audio.src)setupSource();
- try{const p=audio.play();if(p&&typeof p.then==='function')await p;message('Đang phát · nhạc thực thu từ nguồn mở');}
- catch(e){lastError=e?.message||'Không thể phát âm thanh';message('Chưa phát được. Bấm Phát lại hoặc đổi bài. Kiểm tra kết nối mạng và âm lượng điện thoại.',true);open();}
- updateUI();
-}
-function pause(){enabled=false;audio.pause();message('Nhạc đã tạm dừng');updateUI();}
-function select(i,autoplay){if(i<0||i>=tracks.length)return;if(localObject){URL.revokeObjectURL(localObject);localObject=null;}current=i;audio.pause();audio.removeAttribute('src');setupSource();updateUI();if(autoplay)play()}
-function next(step=1){select((current+step+tracks.length)%tracks.length,enabled)}
-function startOnEntry(){ // Called synchronously in the click to enter the temple (mobile gesture requirement)
- if(!enabled && !audio.src) {current=0;setupSource();play();}
-}
-window.AnLacMusic={startOnEntry,play,pause,open,togglePanel(){panel.classList.contains('hidden')?open():close()},tracks};
-$('#musicToggle').addEventListener('click',()=>audio.paused?play():pause());
-$('#musicPrevious').addEventListener('click',()=>{next(-1);open()});
-$('#musicNext').addEventListener('click',()=>{next(1);open()});
-$('#musicClose').addEventListener('click',close);
-selector.addEventListener('change',()=>{select(Number(selector.value),true);open()});
-volume.addEventListener('input',()=>{audio.volume=Number(volume.value)/100;volText.textContent=volume.value+'%'});
-$('#musicFile').addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;if(!f.type.startsWith('audio/')){message('Hãy chọn file âm thanh MP3/M4A/OGG',true);return;}if(localObject)URL.revokeObjectURL(localObject);localObject=URL.createObjectURL(f);audio.pause();audio.src=localObject;now.textContent='Nhạc của bạn · '+f.name;credit.textContent='Tệp trong thiết bị · không được tải lên máy chủ';source.removeAttribute('href');source.textContent='Chỉ phát trên thiết bị này';selector.value='';play()});
-audio.addEventListener('ended',()=>{if(enabled)next(1)});
-audio.addEventListener('playing',()=>{message('Đang phát · '+(localObject?'nhạc bạn chọn':'bản thu thật'));updateUI()});
-audio.addEventListener('waiting',()=>{message('Đang tải nhạc…');updateUI()});
-audio.addEventListener('pause',updateUI);
-audio.addEventListener('error',()=>{if(!localObject && audio.src!==tracks[current].src && audio.dataset.fallback!==String(current)){audio.dataset.fallback=String(current);audio.src=tracks[current].src;audio.load();if(enabled)audio.play().catch(()=>{});return;}message('Không tải được bài nhạc này. Hãy thử bài khác hoặc chọn nhạc trên máy.',true);open();updateUI()});
-updateUI();
-})();
 </script>
+<script src="audio-player.js?v=1.6" defer></script>
 </body>
 </html>
