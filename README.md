@@ -1,4 +1,7 @@
-# AN LẠC ĐƯỜNG — CHÙA ONLINE V1.1
+# AN LẠC ĐƯỜNG — V1.2
+
+**Bổ sung nhạc chùa thu âm và trình phát điều khiển trên máy tính/điện thoại.** Nhấn nút ♫ ở góc phải để mở bảng nhạc, chọn bản nhạc hoặc nhạc riêng từ thiết bị. Website miễn phí, không đăng ký. Trình duyệt điện thoại có thể yêu cầu nhấn Phát lần đầu.
+
 
 Website chánh điện trực tuyến miễn phí, không cần đăng ký tài khoản.
 
@@ -24,3 +27,11 @@ https://sagsdieuhanh-gif.github.io/dichuaonline/
 
 ## Phiên bản
 V1.1 — 31/10/2026
+
+
+## Âm thanh V1.2
+
+- Danh sách ba bản thu âm từ Wikimedia Commons: nhạc thiền không lời, tụng Tam Quy (Pali), tiếng tụng tại chùa Linh Ẩn (Trung Quốc).
+- Tự chuyển bài, điều chỉnh âm lượng, phát/tạm dừng, chọn file âm thanh trong thiết bị. Nhạc do người dùng chọn chỉ mở tại máy đó, không upload.
+- Nguồn và giấy phép ghi ở [MUSIC-CREDITS.md](MUSIC-CREDITS.md).
+- Chưa bao gồm bản tụng kinh tiếng Việt có giấy phép, cũng chưa có realtime nhiều người; không phải bản sao 100% website tham khảo.
