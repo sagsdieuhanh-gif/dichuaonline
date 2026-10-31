@@ -1,21 +1,29 @@
-# AN LẠC ĐƯỜNG — V1.7.1 (31/10/2026)
+# AN LẠC ĐƯỜNG — V1.8
 
-**Trang Chùa Online:** https://sagsdieuhanh-gif.github.io/dichuaonline/?v=1.7.1
+**Chùa Online (GitHub Pages):** https://sagsdieuhanh-gif.github.io/dichuaonline/?v=1.8
 
-## Thay đổi hình ảnh V1.7
+## Hoàn thiện V1.8
+- Giữ nguyên ảnh chánh điện đã được duyệt, không kéo dịch/phóng to cảnh theo nhân vật.
+- Sửa nhân vật nam: dùng hình người áo lam tóc ngắn thực tế cắt trực tiếp từ ảnh nền đã được duyệt, thay đầu robot màu đen. Nhân vật nữ vẫn mặc áo lam và nhìn từ sau.
+- Định vị theo sàn chánh điện: lối giữa dành cho di chuyển thủ công; lối sang hai bên dành cho tự tìm chỗ ngồi.
+- Giới hạn đi lên gần bàn thờ để không xuyên vào tượng Phật hoặc đồ thờ.
+- Rút ngắn thời gian tự di chuyển tới vị trí lễ và điều chỉnh kích thước các tư thế quỳ/lạy để không biến mất.
+- Giao diện điện thoại gọn: thu nhỏ khung thông tin, lời chào và thông báo, tránh che tượng Phật.
+- Giới hạn khoảng 30 khung hình/giây, ngừng xử lý khi trang bị ẩn để giảm tải trên điện thoại.
+- Giữ 3 bài nhạc thiền nguyên bản tích hợp và cơ chế phát/chọn bài/chỉnh âm lượng của bản trước.
+- Không tự phát giọng đọc trì chú máy vì chưa bảo đảm phát âm chính xác.
 
-- Khôi phục **đúng bức ảnh chánh điện đầu tiên** mà người dùng đã chọn làm hình mẫu. Giữ đầy đủ tượng Phật, bàn thờ, khói hương, lối đi và những người ngồi hai bên trong một bức ảnh liền mạch.
-- Không cắt ảnh chánh điện ở giữa rồi vẽ thêm sàn giả; không phóng, quay, hoặc kéo dịch chánh điện theo vị trí nhân vật.
-- Dùng **nhân vật áo lam từ ảnh chụp dựng lại**, góc nhìn sau lưng, thay thế hình vector robot. Có ảnh nam tóc ngắn và nữ tóc dài, các pha quỳ/cúi lạy.
-- Chỉ vẽ nhân vật người dùng và khói hương lên ảnh đã có người ngồi, tránh hiện người trùng lặp. Vị trí sàn thay đổi theo tọa độ nhân vật.
-- Vẫn có 100 vị trí mô phỏng, nghi lễ lễ Phật/thắp hương, niệm Phật, lời chào cá nhân hóa, bộ phát ba bản nhạc thiền tự sáng tác. Không dùng giọng máy đọc Chú Đại Bi khi phát âm chưa chính xác.
-- Giao diện máy tính/điện thoại, miễn phí và không đăng ký tài khoản.
+## Hướng dẫn sử dụng
+1. Mở website, nhập tên/pháp danh, chọn nam hoặc nữ rồi bấm **Vào chùa**; không đăng ký.
+2. Dùng phím W/A/S/D trên máy tính hoặc nút mũi tên trên điện thoại để đi trên sàn chánh điện.
+3. Dùng các nút **Đến chỗ ngồi**, **Lạy Phật**, **Thắp hương**, **Niệm Phật**, **Thỉnh chuông**.
+4. Bấm ♫ để mở danh sách 3 bài nhạc, chọn bài, điều chỉnh âm lượng. Điện thoại có thể yêu cầu chạm Phát một lần.
 
-## Kiểm thử
+## Kiểm tra kỹ thuật
+- Kiểm tra cú pháp JavaScript của bản cập nhật trước khi ghi lên GitHub.
+- Bản thử tương đương được kiểm tra trong Chromium trên kích thước máy tính và điện thoại.
+- Đã kiểm tra nút vào chùa, niệm Phật tăng lên 1/108, chuông, nút lễ và các lựa chọn nhạc không gây lỗi JavaScript.
+- Cần kiểm tra thêm sự tương thích trên từng thiết bị thực tế, nhất là iOS.
 
-- Cú pháp JavaScript hợp lệ (Node.js syntax check).
-- Có dữ liệu ảnh chánh điện, avatar nam/nữ và 3 tư thế lễ Phật.
-- Có logic 100 vị trí và camera nền cố định, không vẽ bản sao các nhân vật ngồi.
-- Đã tạo ảnh đối chiếu 390×844 và 1440×900 từ cùng hình nền, có nhân vật tại vị trí xuất phát.
-
-**Giới hạn:** Đây là cảnh 2.5D với nhân vật tách lớp trên ảnh nền đã dựng, không phải 3D đầy đủ hoặc 100 người thật đang kết nối. Chuyển động quỳ lạy dùng chuỗi tư thế ảnh, chưa phải skeletal animation 3D. Âm thanh giọng nói vẫn tắt để tránh phát âm sai.
+## Giới hạn
+Cảnh vẫn là ảnh phối cảnh 2.5D; chưa phải game 3D hệ xương chuyển động thật hoặc 100 người dùng đồng bộ. Người ngồi trong chánh điện là hình ảnh mô phỏng. Đây là dự án độc lập, không sao chép toàn bộ thiết kế/hệ thống của niệmphat.online.
