@@ -72,7 +72,7 @@ button.addEventListener('click',()=>playing?pause():play());
 previous.addEventListener('click',()=>switchTo(selected-1));next.addEventListener('click',()=>switchTo(selected+1));
 select.addEventListener('change',()=>{switchTo(Number(select.value));play()});
 closeButton.addEventListener('click',close);
-sound.addEventListener('click',()=>isOpen()?close():open());
+// The existing index.html already binds the ♫ button via AnLacMusic.togglePanel.
 volume.addEventListener('input',()=>{volumeValue.textContent=volume.value+'%';if(yt&&apiReady){try{yt.setVolume(Number(volume.value))}catch(_){}}else if(iframe){setStatus('Có thể chỉnh âm lượng bằng nút loa trong video hoặc trên điện thoại.')}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing){pause()}});
 window.AnLacMusic={startOnEntry(){if(entered)return;entered=true;open();setStatus('Chọn nhạc thiền hoặc bài tụng niệm. Nhấn Phát để bắt đầu.');},play,pause,open,togglePanel(){isOpen()?close():open()},tracks};
