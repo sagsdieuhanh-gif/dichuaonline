@@ -239,9 +239,15 @@ function drawBackground(t){
    const srcH=Math.floor(altarArt.naturalHeight*.52);
    const aspect=altarArt.naturalWidth/srcH;
    const viewH=horizon+35, imgH=Math.max(viewH,W/aspect),imgW=imgH*aspect;
-   // The sanctuary remains a fixed space. No artificial backdrop zoom or sliding.
-   // Floor, lamps, cushions and avatars change perspective only through world-space projection.
-   ctx.drawImage(altarArt,0,0,altarArt.naturalWidth,srcH,(W-imgW)/2,-5,imgW,imgH);
+   // Sanctuary stays at a stationary world coordinate. Its apparent size changes
+   // ONLY from the viewer approaching it, using the same projection as objects.
+   const altarOrigin=project(0,34,-42);
+   const entryScale=(H*.99)/(34.5+42);
+   const perspective=altarOrigin?clamp(altarOrigin.s/entryScale,.66,4.2):1;
+   const wallW=imgW*perspective, wallH=imgH*perspective;
+   const left=(altarOrigin?altarOrigin.x:W/2)-wallW/2;
+   const top=altarOrigin?altarOrigin.y-10:-5;
+   ctx.drawImage(altarArt,0,0,altarArt.naturalWidth,srcH,left,top,wallW,wallH);
  } else {
    let g=ctx.createLinearGradient(0,0,0,horizon);g.addColorStop(0,'#281308');g.addColorStop(1,'#a26c29');ctx.fillStyle=g;ctx.fillRect(0,0,W,horizon);drawBuddha();
  }
