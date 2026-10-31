@@ -236,18 +236,22 @@ function drawBackground(t){
  const horizon=clamp(project(0,0,-33)?.y||H*.46,H*.35,H*.56);
  ctx.fillStyle='#170e0a';ctx.fillRect(0,0,W,H);
  if(altarArt.complete&&altarArt.naturalWidth){
+   // Fixed chanh-dien backdrop: maintain a stable vanishing point at every distance.
+   // Previous version projected a fake y=34 world position, which sent the altar
+   // off the top of the canvas as the avatar approached the Buddha.
    const srcH=Math.floor(altarArt.naturalHeight*.52);
    const aspect=altarArt.naturalWidth/srcH;
-   const viewH=horizon+35, imgH=Math.max(viewH,W/aspect),imgW=imgH*aspect;
-   // Sanctuary stays at a stationary world coordinate. Its apparent size changes
-   // ONLY from the viewer approaching it, using the same projection as objects.
-   const altarOrigin=project(0,34,-42);
-   const entryScale=(H*.99)/(34.5+42);
-   const perspective=altarOrigin?clamp(altarOrigin.s/entryScale,.66,4.2):1;
-   const wallW=imgW*perspective, wallH=imgH*perspective;
-   const left=(altarOrigin?altarOrigin.x:W/2)-wallW/2;
-   const top=altarOrigin?altarOrigin.y-10:-5;
+   const baseH=Math.max(horizon+35,W/aspect);
+   const approach=clamp(1+(35-cam.z)*.009,1,1.43);
+   const wallH=baseH*approach,wallW=wallH*aspect;
+   const pan=clamp(cam.x*.9+Math.sin(game.look)*W*.10,-W*.17,W*.17);
+   const left=(W-wallW)/2-pan;
+   const top=-Math.min(18,Math.max(0,(approach-1)*H*.04));
+   // Only the wall is drawn here. The temple floor and live avatars are separate.
+   ctx.save();
+   ctx.beginPath();ctx.rect(0,0,W,horizon+32);ctx.clip();
    ctx.drawImage(altarArt,0,0,altarArt.naturalWidth,srcH,left,top,wallW,wallH);
+   ctx.restore();
  } else {
    let g=ctx.createLinearGradient(0,0,0,horizon);g.addColorStop(0,'#281308');g.addColorStop(1,'#a26c29');ctx.fillStyle=g;ctx.fillRect(0,0,W,horizon);drawBuddha();
  }
