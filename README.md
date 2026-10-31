@@ -27,3 +27,14 @@
 
 ## Giới hạn
 Cảnh vẫn là ảnh phối cảnh 2.5D; chưa phải game 3D hệ xương chuyển động thật hoặc 100 người dùng đồng bộ. Người ngồi trong chánh điện là hình ảnh mô phỏng. Đây là dự án độc lập, không sao chép toàn bộ thiết kế/hệ thống của niệmphat.online.
+
+## Nguồn sáu bài YouTube (V1.9)
+
+- [Nhạc thiền không lời](https://www.youtube.com/watch?v=E0zsRzn0iLI)
+- [Chú Đại Bi tiếng Việt — Kim Linh Official](https://www.youtube.com/watch?v=W_9wRtBngdc)
+- [Niệm Phật A Di Đà — POPS MUSIC](https://www.youtube.com/watch?v=fpsc36eAX-A)
+- [Chú Dược Sư — Kim Linh Official](https://www.youtube.com/watch?v=Eashk8HtJVo)
+- [Bát Nhã Tâm Kinh — Nhạc Nhà Phật](https://www.youtube.com/watch?v=9qDZGa2MVxo)
+- [Chú Đại Bi — Diệu Âm Tịnh Tuấn](https://www.youtube.com/watch?v=uDl8Jc3-sjw)
+
+Không lưu file âm thanh/video YouTube trong repository; quyền nội dung thuộc về chủ sở hữu. Giới hạn của YouTube về nhúng, phát tự động, quảng cáo và khu vực vẫn được áp dụng.
