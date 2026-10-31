@@ -1,37 +1,29 @@
-# AN LẠC ĐƯỜNG — V1.2
+# AN LẠC ĐƯỜNG — V1.3 (31/10/2026)
 
-**Bổ sung nhạc chùa thu âm và trình phát điều khiển trên máy tính/điện thoại.** Nhấn nút ♫ ở góc phải để mở bảng nhạc, chọn bản nhạc hoặc nhạc riêng từ thiết bị. Website miễn phí, không đăng ký. Trình duyệt điện thoại có thể yêu cầu nhấn Phát lần đầu.
+**Website chùa online miễn phí, vào ngay không đăng ký:** https://sagsdieuhanh-gif.github.io/dichuaonline/
 
+## Có gì trong V1.3?
+- **Chánh điện được neo tại một tọa độ cố định** trong thế giới mô phỏng; khi bạn đi tới gần, góc nhìn chuyển theo nhân vật tạo phối cảnh đến gần tượng Phật. Không sử dụng chuyển dịch giả của toàn cảnh theo hướng di chuyển.
+- **Nhân vật nhìn từ phía sau**, nam tóc ngắn, nữ tóc dài, có phần vai/cổ, tà áo lam dài, ống tay áo, nếp vải và hoạt ảnh bước chân 6 khung hình thay cho khối robot. Cảnh là Canvas phối cảnh, chưa phải mô hình WebGL 3D.
+- **Ba giai điệu thiền nguyên bản** phát bằng Web Audio, không cần tải từ server âm nhạc bên ngoài: *Chuông Sớm An Nhiên*, *Sen Nở Trong Tâm*, *Hương Trầm Tĩnh Lặng*. Nhạc gồm các lớp sáo, chuông, mõ và âm nền; tạo bằng thuật toán. Không sử dụng giai điệu từ video tham khảo.
+- **Ba bản thu bổ sung** tham khảo từ Wikimedia Commons (cần Internet): tụng Tam Quy; tụng kinh tại chùa Linh Ẩn; Spiritual Ambient. Xem [MUSIC-CREDITS.md](MUSIC-CREDITS.md).
+- Nút ♫ để phát/tạm dừng, đổi bài, chỉnh âm lượng hoặc phát nhạc riêng từ điện thoại.
+- 100 chỗ ngồi mô phỏng, 20 chỗ/hàng × 5 hàng; đi theo trục giữa; quỳ lễ, thắp hương và khói hương, thỉnh chuông, niệm Phật 108 hạt, lời chào tiếng Việt tùy thiết bị.
 
-Website chánh điện trực tuyến miễn phí, không cần đăng ký tài khoản.
+## Hướng dẫn sử dụng
+1. Mở website, nhập pháp danh và chọn nhân vật.
+2. Bấm **Vào chùa** để vào chánh điện và bật nhạc. Điện thoại có thể yêu cầu chạm **Phát nhạc** sau khi mở.
+3. Dùng phím **W/A/S/D** hoặc phím mũi tên để di chuyển. Trên điện thoại dùng nút điều hướng.
+4. Dùng các nút **An tọa**, **Lạy Phật**, **Dâng hương**, **Niệm Phật**, **Thỉnh chuông**.
+5. Bấm **♫** để chuyển giữa 3 bài nhạc thiền nguyên bản, 3 bản thu tham khảo, hoặc chọn MP3 từ điện thoại. Bài nhạc riêng không được tải lên server.
 
-## Website
-https://sagsdieuhanh-gif.github.io/dichuaonline/
+## Phạm vi và giới hạn
+- Đây là **phối cảnh 2.5D/Canvas**, không phải game 3D WebGL, nên nhân vật và chuyển động vẫn chưa đạt mức chân thực như video được cung cấp.
+- 100 vị trí là **dữ liệu mô phỏng**, chưa phải 100 người online đồng thời. Muốn đồng bộ thật phải tích hợp backend realtime.
+- Âm thanh thiền nguyên bản là nhạc **tổng hợp điện tử**, không phải bản thu hát kinh tiếng Việt. Tiếng nói chúc phụ thuộc giọng đọc có trên máy.
+- Không có tài khoản, không theo dõi dữ liệu cá nhân trên server, không thanh toán.
 
-**Chú ý**: trang GitHub Pages có thể chưa hoạt động đến khi chủ repository kích hoạt Pages trong **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: main → Folder: /(root) → Save**.
-
-## Chức năng
-- Chánh điện trang trí tượng Phật vàng và hoa đèn, thảm đỏ chính giữa, lư hương với làn khói bay.
-- Phật tử mặc áo lam, nam tóc ngắn/nữ tóc dài, camera sau lưng, thao tác WASD/phím mũi tên và cảm ứng.
-- 100 vị trí mô phỏng: 5 hàng × 20 chỗ (10 trái và 10 phải), chừa lối giữa.
-- Tự đến chỗ ngồi, đứng lên, lạy Phật, thắp hương, niệm Phật 108 hạt, thỉnh chuông.
-- Lời chào đọc tên bằng giọng tiếng Việt khi trình duyệt hỗ trợ.
-- Nhạc thiền có giai điệu nguyên bản tạo bằng Web Audio; không sử dụng bản thu có bản quyền từ video.
-
-## Phạm vi kỹ thuật
-- Dùng HTML/CSS/Canvas2D và âm thanh Web Audio. Toàn bộ giao diện và tài sản ảnh được đóng gói trong `index.html` để GitHub Pages phục vụ tĩnh, không cần bước build.
-- Đây là phối cảnh 3D mô phỏng có chuyển động, **chưa phải 3D WebGL thực**.
-- Các nhân vật khác trong chùa là **NPC mô phỏng**, **chưa có 100 người thật online**. Muốn đồng bộ người dùng ở các thiết bị cần kết nối Firebase/Supabase/WebSocket, không thể đạt chỉ bằng GitHub Pages.
-- Hình ảnh nền được tạo riêng cho dự án, không sao chép tài sản gốc của website/video tham khảo.
-- Không có chức năng thanh toán hay tài khoản.
-
-## Phiên bản
-V1.1 — 31/10/2026
-
-
-## Âm thanh V1.2
-
-- Danh sách ba bản thu âm từ Wikimedia Commons: nhạc thiền không lời, tụng Tam Quy (Pali), tiếng tụng tại chùa Linh Ẩn (Trung Quốc).
-- Tự chuyển bài, điều chỉnh âm lượng, phát/tạm dừng, chọn file âm thanh trong thiết bị. Nhạc do người dùng chọn chỉ mở tại máy đó, không upload.
-- Nguồn và giấy phép ghi ở [MUSIC-CREDITS.md](MUSIC-CREDITS.md).
-- Chưa bao gồm bản tụng kinh tiếng Việt có giấy phép, cũng chưa có realtime nhiều người; không phải bản sao 100% website tham khảo.
+## Phát hành
+- Branch: `main` — source: `index.html`, `audio-player.js`, `MUSIC-CREDITS.md`.
+- GitHub Pages: repository → Settings → Pages → Deploy from a branch → main / (root).
+- Bản cũ V1.1 / V1.2 có thể còn trong bộ nhớ cache của trình duyệt; hãy tải lại để nhận bản mới.
