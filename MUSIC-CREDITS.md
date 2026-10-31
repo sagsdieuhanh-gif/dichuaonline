@@ -1,11 +1,18 @@
-# Nguồn âm thanh · An Lạc Đường V1.2
+# Âm thanh An Lạc Đường V1.5
 
-Các bản nhạc dưới đây được phát từ Wikimedia Commons, không sao chép trực tiếp vào repository. Ứng dụng cần có Internet để phát. Không có bản thu nào được tuyên bố là bản gốc của Niệm Phật Online.
+## 3 bài thiền nguyên bản (không dùng thu âm bên thứ ba)
 
-1. **Spiritual Ambient** — MusicLFiles. Creative Commons Attribution 4.0 (CC BY 4.0). https://commons.wikimedia.org/wiki/File:Spiritual_Ambient_by_MusicLFiles.ogg — https://creativecommons.org/licenses/by/4.0/
-2. **Buddham Saranam Gacchami (Male Voice, with Female Chorus)** — Hariharan. Commons: CC0 1.0. https://commons.wikimedia.org/wiki/File:Buddham_Saranam_Gacchami_-_Male_Voice,_with_Female_Chorus.oga — https://creativecommons.org/publicdomain/zero/1.0/
-3. **Chanting at Lingyin Temple, Hangzhou** — LouiseBrown1981. Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0). https://commons.wikimedia.org/wiki/File:Chanting_at_Lingyin_Temple,_Hangzhou.ogg — https://creativecommons.org/licenses/by-sa/3.0/
+- Chuông Sớm An Nhiên — `music/chuong-som-an-nhien.wav`
+- Sen Nở Trong Tâm — `music/sen-no-trong-tam.wav`
+- Hương Trầm Tĩnh Lặng — `music/huong-tram-tinh-lang.wav`
 
-Nhạc/Tụng được nhúng trực tiếp, chưa chỉnh sửa hoặc phối lại. Lời chúc TTS, tiếng mõ và tiếng chuông gốc lập trình của website được tạo riêng; nguồn âm thanh web được phân biệt rõ.
+Các bản nhạc được tạo riêng cho website bằng thuật toán tổng hợp âm thanh, không lấy nguyên bản thu của website tham khảo. Được phép sử dụng và phát miễn phí trong An Lạc Đường.
 
-Không tự sao chép các bài nhạc Phật giáo thương mại hoặc bài nhạc có trong video tham khảo khi chưa có giấy phép sử dụng công khai.
+## Tụng/Trì chú
+
+- **Chú Đại Bi:** chỉ có **trích đoạn sáu câu đầu**, được đọc bằng giọng máy do trình duyệt cung cấp. Không khẳng định đây là bản tụng đúng nghi thức hoặc bản Chú Đại Bi đầy đủ.
+- **Niệm Nam mô A Di Đà Phật:** giọng máy tiếng Việt, 108 lần nếu thiết bị hỗ trợ.
+- **Om Mani Padme Hum:** bản thu tại Định Giác Tự, Saimmx, CC0 1.0. https://commons.wikimedia.org/wiki/File:20260602_145912_Dingjue_Om_mani_padme_hum.ogg
+- **Uṣṇīṣa Sitātapatrā Dhāraṇī:** bản ghi trì chú, không phải Chú Đại Bi. Theo trang nguồn giấy phép Creative Commons Attribution 3.0. https://commons.wikimedia.org/wiki/File:Usnidha_Sitatapatra_dharani,_Siddham_chant_and_Buddhist_Sanskrit_mantra_chant_2_short_version_1075_1110.ogg
+
+Hai bản thu bên ngoài cần Internet; tùy trình duyệt hỗ trợ định dạng OGG. Người dùng có thể phát nhạc cá nhân từ thiết bị qua nút chọn tệp âm thanh (tệp không được upload).
