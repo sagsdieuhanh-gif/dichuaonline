@@ -78,6 +78,11 @@ function newEngine(){if(!AudioClass)throw Error('Thiết bị không hỗ trợ 
  timer=setInterval(tick,350);tick();
  return {ac,master,get active(){return playing},setVolume(v){master.gain.setTargetAtTime(v*.54,ac.currentTime,.08)},stop(){if(!playing)return;playing=false;clearInterval(timer);master.gain.setTargetAtTime(0,ac.currentTime,.05);setTimeout(()=>{ac.close().catch(()=>{})},180);}}
 }
+function recordingFile(t){if(player.canPlayType('audio/ogg'))return t.file;
+const rest=t.file.split('/commons/')[1];if(!rest)return t.file;
+const basename=rest.split('/').slice(2).join('/');
+return 'https://upload.wikimedia.org/wikipedia/commons/transcoded/'+rest+'/'+basename+'.mp3';
+}
 function info(){const t=tracks[selected];title.textContent=t.name;credit.textContent=t.by;
  if(t.kind==='original'){source.textContent='Nhạc nguyên bản · Không cần Internet';source.removeAttribute('href');}
  else{source.textContent='Nguồn và giấy phép ↗';source.href=t.url}select.value=String(selected)}
@@ -88,7 +93,7 @@ function dispose(){playbackSerial++;player.pause();player.removeAttribute('src')
 async function play(){const serial=++playbackSerial;enabled=true;const t=localURL?null:tracks[selected];
  if(!localURL&&t.kind==='original'){player.pause();try{if(!engine)engine=newEngine();await engine.ac.resume();if(serial!==playbackSerial)return;state('Đang phát giai điệu thiền nguyên bản, tiếng chuông và tiếng mõ.');}catch(e){enabled=false;state('Không thể phát âm thanh. Hãy thử nhấn Phát lại.',true)}return}
  if(engine){engine.stop();engine=null}
- if(!player.src||(!localURL&&!player.src.includes(encodeURIComponent(t.file.split('/').pop()).slice(0,10))))player.src=localURL||t.file;
+ const resolved=localURL||recordingFile(t);if(!player.src||player.src!==resolved)player.src=resolved;
  player.loop=true;player.volume=vol;
  try{await player.play();if(serial===playbackSerial)state(localURL?'Đang phát nhạc từ máy của bạn.':'Đang phát bản thu âm tụng niệm.')}
  catch(e){enabled=false;state('Chưa phát được bản thu. Vui lòng chọn nhạc thiền nguyên bản hoặc nhấn Phát lại.',true)}
