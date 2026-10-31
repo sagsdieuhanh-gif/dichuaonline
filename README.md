@@ -1,6 +1,6 @@
-# AN LẠC ĐƯỜNG — V1.7 (31/10/2026)
+# AN LẠC ĐƯỜNG — V1.7.1 (31/10/2026)
 
-**Trang Chùa Online:** https://sagsdieuhanh-gif.github.io/dichuaonline/?v=1.7
+**Trang Chùa Online:** https://sagsdieuhanh-gif.github.io/dichuaonline/?v=1.7.1
 
 ## Thay đổi hình ảnh V1.7
 
