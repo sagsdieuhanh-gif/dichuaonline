@@ -98,31 +98,90 @@ for(let r=0;r<5;r++){
 for(let i=0;i<3;i++)movable.push({x:(i-1)*1.15,z:6.5-i*8.5,gender:i%2?'female':'male',skin:i%3});
 function nextSeat(){let options=rows.filter(s=>!s.occupied);return options.sort((a,b)=>a.row-b.row||Math.abs(a.x)-Math.abs(b.x))[0]||null}
 // Fully procedural sprites: no copyrighted character models or downloaded assets.
+// Back-view-only hand-drawn Buddhist lay-practitioner avatars, full length robes.
+// The altar and all seating are stationary world objects; only avatar position and camera move.
 function createSprite(kind,gender,skinIdx){
-  const cv=document.createElement('canvas');cv.width=180;cv.height=300;const g=cv.getContext('2d');
-  const skin=skins[skinIdx]||skins[1],female=gender==='female',sit=kind==='sit';
-  g.clearRect(0,0,180,300);
-  let gradient=g.createLinearGradient(45,92,133,245);gradient.addColorStop(0,'#b6b8c3');gradient.addColorStop(.52,'#6f8095');gradient.addColorStop(1,'#394857');
-  const fabric=gradient;
-  if(sit){
-    g.fillStyle='#34251d';g.beginPath();g.ellipse(90,264,74,21,0,0,Math.PI*2);g.fill();
-    g.fillStyle='#725447';g.beginPath();g.ellipse(90,253,70,22,0,0,Math.PI*2);g.fill();
-    g.fillStyle='#526478';g.beginPath();g.ellipse(90,230,72,33,0,0,Math.PI*2);g.fill();
-    g.fillStyle=fabric;g.beginPath();g.moveTo(66,118);g.quadraticCurveTo(42,142,32,205);g.quadraticCurveTo(15,235,51,249);g.quadraticCurveTo(90,276,132,251);g.quadraticCurveTo(162,239,146,205);g.quadraticCurveTo(139,143,112,120);g.closePath();g.fill();
-    g.strokeStyle='rgba(238,230,219,.26)';g.lineWidth=2;g.beginPath();g.moveTo(90,132);g.lineTo(90,248);g.stroke();
-    g.fillStyle='#718497';g.beginPath();g.ellipse(43,198,17,47,-.35,0,Math.PI*2);g.ellipse(137,198,17,47,.35,0,Math.PI*2);g.fill();
-  } else {
-    g.fillStyle='#263342';g.beginPath();g.moveTo(69,244);g.lineTo(55,290);g.lineTo(83,291);g.lineTo(95,230);g.closePath();g.fill();g.beginPath();g.moveTo(94,231);g.lineTo(96,292);g.lineTo(123,292);g.lineTo(113,240);g.fill();
-    g.fillStyle=fabric;g.beginPath();g.moveTo(69,113);g.quadraticCurveTo(34,118,29,186);g.lineTo(46,242);g.quadraticCurveTo(89,269,137,242);g.lineTo(150,187);g.quadraticCurveTo(145,118,111,113);g.closePath();g.fill();
-    g.strokeStyle='rgba(218,229,242,.28)';g.lineWidth=2;g.beginPath();g.moveTo(88,130);g.lineTo(87,247);g.stroke();
-    g.fillStyle='#798da1';g.beginPath();g.moveTo(58,127);g.quadraticCurveTo(44,129,42,167);g.lineTo(42,222);g.quadraticCurveTo(57,236,66,215);g.lineTo(73,143);g.fill();g.beginPath();g.moveTo(121,128);g.quadraticCurveTo(143,134,143,166);g.lineTo(146,223);g.quadraticCurveTo(130,238,119,211);g.lineTo(111,142);g.fill();
-    g.fillStyle=skin;g.beginPath();g.ellipse(52,224,9,12,0,0,Math.PI*2);g.ellipse(140,225,9,12,0,0,Math.PI*2);g.fill();
-  }
-  g.fillStyle=skin;g.beginPath();g.ellipse(90,115,20,18,0,0,Math.PI*2);g.fill();
-  if(female){g.fillStyle='#1e1a1c';g.beginPath();g.moveTo(65,84);g.bezierCurveTo(44,104,54,179,67,185);g.lineTo(116,184);g.bezierCurveTo(128,156,136,108,116,84);g.closePath();g.fill();g.fillStyle='#3d2c27';g.beginPath();g.ellipse(91,92,30,39,0,0,Math.PI*2);g.fill();g.fillStyle='#211b1b';g.beginPath();g.ellipse(90,86,30,32,0,Math.PI,2*Math.PI);g.fill();g.fillStyle='#826d62';g.fillRect(83,142,15,4)}
-  else {g.fillStyle=skin;g.beginPath();g.ellipse(90,113,26,23,0,0,Math.PI*2);g.fill();g.fillStyle='#292321';g.beginPath();g.ellipse(90,94,29,34,0,0,Math.PI*2);g.fill();g.fillStyle='#40332c';g.beginPath();g.ellipse(82,82,13,19,-.2,0,Math.PI*2);g.fill();g.fillStyle='#211b1b';g.beginPath();g.ellipse(108,93,9,18,.2,0,Math.PI*2);g.fill();}
-  g.fillStyle='rgba(255,255,255,.18)';g.beginPath();g.ellipse(69,148,5,28,.2,0,Math.PI*2);g.fill();
-  return cv;
+ const cv=document.createElement('canvas');cv.width=360;cv.height=600;
+ const g=cv.getContext('2d');g.scale(2,2);
+ const skin=skins[skinIdx]||skins[1],female=gender==='female',sitting=kind==='sit',walking=kind.startsWith('walk');
+ const phase=walking?(Number(kind.replace('walk',''))||0)/6*Math.PI*2:0;
+ const stride=walking?Math.sin(phase)*11:0,armSwing=walking?Math.sin(phase)*7:0;
+ const P=(f,c,s)=>{g.beginPath();f();g.closePath();g.fillStyle=c;g.fill();if(s){g.strokeStyle=s;g.stroke()}};
+ const shade=(a,b,from=55,to=140)=>{const gr=g.createLinearGradient(from,115,to,258);gr.addColorStop(0,a);gr.addColorStop(.26,'#9fadb7');gr.addColorStop(.61,'#778d9f');gr.addColorStop(1,b);return gr};
+ const outline='rgba(37,48,59,.42)';
+ g.lineJoin='round';g.lineCap='round';g.strokeStyle=outline;
+ // A soft contact shadow is part of each character's silhouette.
+ g.fillStyle='rgba(15,17,21,.2)';g.beginPath();g.ellipse(90,290,sitting?70:36,7,0,0,Math.PI*2);g.fill();
+ if(sitting){
+   // Crossed legs under loose ankle-length robe, over a low prayer cushion.
+   P(()=>{g.ellipse(90,267,72,23,0,0,7)},'#78554c');
+   P(()=>{g.ellipse(90,260,67,17,0,0,7)},'#b18c75');
+   P(()=>{g.moveTo(59,200);g.bezierCurveTo(28,211,4,238,22,257);g.bezierCurveTo(39,281,64,273,91,273);g.bezierCurveTo(117,276,151,280,163,257);g.bezierCurveTo(178,231,143,205,119,199);g.closePath()},shade('#9cabb6','#62798d'));
+   // Folded knees get fabric shadows rather than rigid rectangular shapes.
+   P(()=>{g.moveTo(43,223);g.quadraticCurveTo(69,240,89,260);g.quadraticCurveTo(60,244,29,251);g.closePath()},'rgba(42,61,78,.23)');
+   P(()=>{g.moveTo(140,221);g.quadraticCurveTo(115,240,93,261);g.quadraticCurveTo(129,246,154,252);g.closePath()},'rgba(238,240,237,.13)');
+ }else{
+   // Ankles and feet remain visible beneath the robe, never stiff robot blocks.
+   P(()=>{g.moveTo(67+stride*.3,260);g.lineTo(64+stride,284);g.quadraticCurveTo(57+stride,290,59+stride,294);g.lineTo(85+stride,294);g.lineTo(87,274);g.closePath()},'#2d3841');
+   P(()=>{g.moveTo(101-stride*.3,261);g.lineTo(99-stride,286);g.quadraticCurveTo(97-stride,292,104-stride,295);g.lineTo(128-stride,295);g.lineTo(122,275);g.closePath()},'#29353d');
+ }
+ // Female hair falls naturally behind the robe and follows the back of the shoulders.
+ if(female){
+    P(()=>{g.moveTo(67,83);g.bezierCurveTo(48,91,45,113,47,138);g.bezierCurveTo(45,165,58,180,69,190);g.lineTo(114,189);g.bezierCurveTo(126,165,139,137,132,113);g.bezierCurveTo(131,91,112,76,67,83);g.closePath()},'#252126');
+    P(()=>{g.moveTo(67,93);g.bezierCurveTo(58,120,59,153,68,173);g.quadraticCurveTo(78,181,83,176);g.lineTo(79,106);g.closePath()},'#413338');
+    P(()=>{g.moveTo(111,90);g.bezierCurveTo(119,116,121,151,110,177);g.quadraticCurveTo(103,185,98,176);g.lineTo(103,102);g.closePath()},'#2c272b');
+ }
+ // Head shape (the viewer always sees the back of the skull; no face/eyes).
+ P(()=>{g.moveTo(70,89);g.bezierCurveTo(68,64,75,52,91,52);g.bezierCurveTo(114,50,119,69,114,91);g.lineTo(110,112);g.quadraticCurveTo(90,122,71,111);g.closePath()},skin);
+ if(female){
+   P(()=>{g.moveTo(68,91);g.bezierCurveTo(62,63,76,47,91,46);g.bezierCurveTo(111,46,124,60,116,91);g.bezierCurveTo(110,108,105,119,107,147);g.bezierCurveTo(102,162,91,159,87,145);g.bezierCurveTo(83,119,73,119,68,91);g.closePath()},'#2d2728');
+   P(()=>{g.moveTo(73,67);g.bezierCurveTo(80,52,102,51,110,72);g.bezierCurveTo(102,78,82,80,73,67);g.closePath()},'#4c3a39');
+   g.strokeStyle='rgba(132,108,100,.26)';g.lineWidth=2;g.beginPath();g.moveTo(89,69);g.bezierCurveTo(96,100,96,125,100,151);g.stroke();
+ }else{
+   P(()=>{g.moveTo(66,87);g.bezierCurveTo(62,62,71,51,89,51);g.bezierCurveTo(111,50,121,64,118,87);g.lineTo(113,103);g.quadraticCurveTo(91,96,68,105);g.closePath()},'#252427');
+   P(()=>{g.moveTo(71,80);g.bezierCurveTo(81,59,101,60,113,76);g.quadraticCurveTo(107,83,95,81);g.quadraticCurveTo(83,79,71,80);g.closePath()},'#383134');
+   g.strokeStyle='rgba(117,104,103,.28)';g.lineWidth=2;g.beginPath();g.moveTo(75,100);g.quadraticCurveTo(91,104,110,100);g.stroke();
+ }
+ // Collar and back-of-neck, carefully layered into cloth not an armor-style joint.
+ P(()=>{g.moveTo(79,110);g.lineTo(101,110);g.lineTo(109,127);g.lineTo(71,128);g.closePath()},skin);
+ P(()=>{g.moveTo(65,119);g.quadraticCurveTo(91,116,115,119);g.lineTo(105,140);g.lineTo(76,140);g.closePath()},'#b7c2c9');
+ // Loose sleeves extending from naturally sloping shoulders.
+ P(()=>{g.moveTo(65,124);g.bezierCurveTo(46,129,42,152,38,177);g.bezierCurveTo(37,187+armSwing,37,216+armSwing,45,226+armSwing);g.quadraticCurveTo(58,238+armSwing,66,223+armSwing);g.lineTo(77,156);g.closePath()},shade('#aebac4','#617589',48,80));
+ P(()=>{g.moveTo(114,123);g.bezierCurveTo(133,129,140,151,143,177);g.bezierCurveTo(147,192-armSwing,143,216-armSwing,135,226-armSwing);g.quadraticCurveTo(124,235-armSwing,114,220-armSwing);g.lineTo(105,154);g.closePath()},shade('#9baebb','#526a7e',100,155));
+ g.strokeStyle='rgba(225,232,236,.29)';g.lineWidth=1.4;g.beginPath();g.moveTo(53,141);g.bezierCurveTo(45,172,49,202+armSwing,52,214+armSwing);g.moveTo(128,141);g.bezierCurveTo(137,176,132,204-armSwing,130,214-armSwing);g.stroke();
+ if(!sitting){
+   // Small hands just beyond the cuffs.
+   P(()=>{g.ellipse(51,231+armSwing,7,10,-.15,0,7)},skin);
+   P(()=>{g.ellipse(130,231-armSwing,7,10,.15,0,7)},skin);
+ }
+ // Gown is a continuous flowing body with subtle folds and translucent blue-gray layering.
+ const robe=shade('#bdc9d0','#526b7d');
+ if(sitting){
+  P(()=>{g.moveTo(68,124);g.bezierCurveTo(84,135,96,132,111,123);g.bezierCurveTo(127,139,127,186,129,224);g.quadraticCurveTo(96,245,51,224);g.bezierCurveTo(55,190,54,151,68,124);g.closePath()},robe);
+ }else{
+  P(()=>{g.moveTo(68,123);g.quadraticCurveTo(90,130,112,123);g.bezierCurveTo(127,141,125,172,130,201);g.quadraticCurveTo(140,243,143,280+stride*.16);g.quadraticCurveTo(120,290,107,284);g.quadraticCurveTo(91,292,77,285);g.quadraticCurveTo(56,292,38,281-stride*.16);g.quadraticCurveTo(44,227,53,194);g.bezierCurveTo(56,155,56,137,68,123);g.closePath()},robe);
+ }
+ // Crossover robe shoulders form a real garment, with neckline and center seam.
+ P(()=>{g.moveTo(66,123);g.quadraticCurveTo(78,134,91,141);g.quadraticCurveTo(103,133,114,123);g.lineTo(108,138);g.quadraticCurveTo(90,155,72,137);g.closePath()},'#bdc7cb','rgba(52,71,84,.28)');
+ g.strokeStyle='rgba(235,239,239,.43)';g.lineWidth=2;g.beginPath();g.moveTo(66,137);g.quadraticCurveTo(84,153,91,158);g.quadraticCurveTo(102,145,112,137);g.stroke();
+ // Silky creases and loose fabric folds.
+ const hem=sitting?231:282;
+ for(const [x,sway,w] of [[63,-7,1.3],[78,2,2],[97,-2,1.5],[116,7,2],[130,-5,1]]){
+  const grad=g.createLinearGradient(x,150,x+sway,hem);grad.addColorStop(0,'rgba(243,245,241,.02)');grad.addColorStop(.5,'rgba(227,235,236,.12)');grad.addColorStop(1,'rgba(24,44,61,.26)');
+  g.strokeStyle=grad;g.lineWidth=w;g.beginPath();g.moveTo(x,157);g.bezierCurveTo(x+sway/2,193,x-sway,239,x+sway,hem);g.stroke();
+ }
+ // Waist sash and hem stitches are visible without flattening the robe.
+ g.strokeStyle='rgba(55,72,83,.24)';g.lineWidth=2.5;g.beginPath();g.moveTo(58,201);g.quadraticCurveTo(90,205,124,200);g.stroke();
+ g.strokeStyle='rgba(242,244,234,.18)';g.lineWidth=1.6;g.beginPath();
+ if(sitting)g.moveTo(55,228);else g.moveTo(43,276);
+ g.quadraticCurveTo(91,sitting?236:289,137,sitting?227:278);g.stroke();
+ if(sitting){
+   // Hands resting naturally in the lap, free of robotic arm shapes.
+   P(()=>{g.ellipse(80,214,10,5,.1,0,7)},skin);
+   P(()=>{g.ellipse(101,214,10,5,-.1,0,7)},skin);
+   g.strokeStyle='rgba(230,234,231,.3)';g.lineWidth=1.2;g.beginPath();g.moveTo(69,197);g.quadraticCurveTo(89,204,107,197);g.stroke();
+ }
+ return cv;
 }
 const spriteCache={};function sprite(kind,gender,skin){const key=`${kind}-${gender}-${skin}`;return spriteCache[key]||(spriteCache[key]=createSprite(kind,gender,skin))}
 function makeBuddha(){
@@ -180,9 +239,9 @@ function drawBackground(t){
    const srcH=Math.floor(altarArt.naturalHeight*.52);
    const aspect=altarArt.naturalWidth/srcH;
    const viewH=horizon+35, imgH=Math.max(viewH,W/aspect),imgW=imgH*aspect;
-   const pan=clamp(cam.x*.006,-.12,.12)*W;
-   const zoom=clamp((34-cam.z)*.004,-.07,.16);
-   ctx.drawImage(altarArt,0,0,altarArt.naturalWidth,srcH,(W-imgW*(1+zoom))/2-pan,-5,imgW*(1+zoom),imgH*(1+zoom));
+   // The sanctuary remains a fixed space. No artificial backdrop zoom or sliding.
+   // Floor, lamps, cushions and avatars change perspective only through world-space projection.
+   ctx.drawImage(altarArt,0,0,altarArt.naturalWidth,srcH,(W-imgW)/2,-5,imgW,imgH);
  } else {
    let g=ctx.createLinearGradient(0,0,0,horizon);g.addColorStop(0,'#281308');g.addColorStop(1,'#a26c29');ctx.fillStyle=g;ctx.fillRect(0,0,W,horizon);drawBuddha();
  }
@@ -231,7 +290,8 @@ function drawSeated(person,t){const {spot}=person;const p=project(spot.x,.05,spo
 function drawStanding(x,z,gender,skin,t,isPlayer=false){const p=project(x,.03,z);if(!p)return;let h=clamp(p.s*(isPlayer?2.2:2.45),3,950),w=h*.6;
  ctx.fillStyle='rgba(24,12,9,.43)';ctx.beginPath();ctx.ellipse(p.x,p.y+h*.012,Math.min(p.s*.55,110),Math.min(p.s*.16,30),0,0,7);ctx.fill();
  const sway=isPlayer&&game.playing?Math.sin(game.walkPhase*3)*Math.min(p.s*.045,6):Math.sin(t*1.4+x)*Math.min(p.s*.012,2);
- ctx.drawImage(sprite('stand',gender,skin),p.x-w/2+sway,p.y-h,w,h);
+ const spriteKind=(isPlayer?game.playing:true)?'walk'+Math.floor((((isPlayer?game.walkPhase:t*3+x*3)%Math.PI/2/Math.PI+1)%1)*6):'stand';
+ ctx.drawImage(sprite(spriteKind,gender,skin),p.x-w/2+sway,p.y-h,w,h);
  if(isPlayer&&game.bowUntil>t){ctx.save();ctx.translate(p.x,p.y-h*.4);ctx.rotate(-.48);ctx.translate(-p.x,-(p.y-h*.4));ctx.drawImage(sprite('sit',gender,skin),p.x-w/2,p.y-h*.98,w,h*.85);ctx.restore()}
 }
 function drawSpot(spot){const p=project(spot.x,.02,spot.z);if(!p)return;const r=Math.min(p.s*.56,100);ctx.fillStyle=spot.occupied?'#841e26':'#67312b';ctx.strokeStyle='#d5a059';ctx.lineWidth=Math.min(2,p.s*.01+.4);ctx.beginPath();ctx.ellipse(p.x,p.y,r,r*.25,0,0,7);ctx.fill();ctx.stroke();if(!spot.occupied){ctx.strokeStyle='rgba(229,192,131,.42)';ctx.beginPath();ctx.arc(p.x,p.y-r*.35,r*.25,0,Math.PI*2);ctx.stroke()}}
