@@ -1,0 +1,66 @@
+name: Import Chanh Dien Online source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/import-chanh-dien.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout destination repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download source and replace old website
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch main https://github.com/kentjuno/chanh-dien-online.git /tmp/chanh-dien-upstream
+          echo "Upstream revision: $(git -C /tmp/chanh-dien-upstream rev-parse HEAD)"
+          rsync -a --delete --exclude='/.git/' --exclude='/.github/' /tmp/chanh-dien-upstream/ ./
+          python3 - <<'PY'
+          from pathlib import Path
+          page=Path("index.html")
+          content=page.read_text(encoding="utf-8")
+          content=content.replace('content="/assets/hall.jpg"', 'content="assets/hall.jpg"')
+          page.write_text(content, encoding="utf-8")
+          Path(".nojekyll").write_text("", encoding="utf-8")
+          Path("IMPORT_ORIGIN.md").write_text(
+              "# Source and attribution\n\n"
+              "This repository contains the Chánh Điện Tịnh Tâm project "
+              "mirrored from https://github.com/kentjuno/chanh-dien-online "
+              "under the MIT software license. The source LICENSE file, "
+              "including copyright (c) 2026 Kent Juno, is preserved.\n\n"
+              "The public GitHub Pages site serves only the static "
+              "index.html and assets/. The live/ directory needs a separate "
+              "Node.js 20+ process and cannot be run by GitHub Pages.\n\n"
+              "Artwork and music were generated with Google Flow and Gemini "
+              "according to the upstream README. Review relevant tool terms "
+              "before commercial redistribution.\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Commit upstream content to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Import kentjuno/chanh-dien-online (MIT) for GitHub Pages"
+          git push origin HEAD:main
