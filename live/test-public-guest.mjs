@@ -22,10 +22,10 @@ try{
  let script=await request('/visit.js');assert.equal(script.status,200);assert.match(script.data,/api\('/);
  let admin=await request('/live/control.html');assert.equal(admin.status,404);
  let denied=await request('/api/join','POST',{name:'An',comment:'xin vô'},cookie,'https://attacker.example');assert.equal(denied.status,403);
- let bad=await request('/api/join','POST',{name:'An',comment:'Nhà có việc'},cookie);assert.equal(bad.status,400);
- let sent=await request('/api/join','POST',{name:'Nhân viên An',comment:'xin vô'},cookie);
+ let bad=await request('/api/join','POST',{name:'An',comment:'   '},cookie);assert.equal(bad.status,400);
+ let sent=await request('/api/join','POST',{name:'Nhân viên An',comment:'Nam mô A Di Đà Phật'},cookie);
  assert.equal(sent.status,200);assert.equal(sent.data.status,'pending');assert.equal(viewers.size,0);
- assert.equal(hybrid.pending.size,1);const id=[...hybrid.pending.keys()][0];assert.ok(id.startsWith('web:'));
+ assert.equal(hybrid.pending.size,1);const id=[...hybrid.pending.keys()][0];assert.ok(id.startsWith('web:'));assert.equal(hybrid.pending.get(id).comment,'Nam mô A Di Đà Phật');
  let before=await request('/api/me','GET',null,cookie);assert.equal(before.data.status,'pending');
  hybrid.localDecide(id,true,'internal');
  let approved=await request('/api/me','GET',null,cookie);assert.equal(approved.data.status,'approved');assert.equal(approved.data.group,'internal');
@@ -36,5 +36,8 @@ try{
  let banned=await request('/api/message','POST',{text:'fake'},anotherCookie);assert.equal(banned.status,403);
  let leave=await request('/api/leave','POST',{},cookie);assert.equal(leave.status,200);assert.equal(viewers.size,0);
  assert.equal(hybrid.approved.size,0);
+ let stranger=await request('/api/me');let strangerCookie=stranger.cookie.split(';')[0];
+ let arbitrary=await request('/api/join','POST',{name:'Mai',comment:'Chúc cả nhà bình an ❤️'},strangerCookie);
+ assert.equal(arbitrary.status,200);assert.equal(arbitrary.data.status,'pending');assert.equal(viewers.size,0);
  console.log('PASS: web visitor no-signup join, isolated public server, admin approval, comment, status, no-control access, exit');
 }finally{await new Promise(resolve=>gw.server.close(resolve))}
