@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { createHybrid } from './temple-hybrid.mjs';
+import { createGuestGateway } from './public-guest.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');            // repo root: serves /assets, /live
@@ -302,3 +303,6 @@ wss.on('connection', (ws, req) => {
   });
 });
 server.listen(PORT, HOST, () => addLog(`Server chạy tại http://localhost:${PORT}  ·  Bảng điều khiển: http://localhost:${PORT}/live/control.html  ·  Overlay: http://localhost:${PORT}/live/overlay.html`));
+// Separate public visitor port. Do NOT tunnel port 3000, which contains privileged controls.
+const guestGateway=createGuestGateway({hybrid,viewers,broadcast,log:addLog,host:'127.0.0.1',port:+process.env.GUEST_PORT||3001});
+guestGateway.start().catch(e=>addLog('Không mở được cổng xin vào trên web: '+e.message));
