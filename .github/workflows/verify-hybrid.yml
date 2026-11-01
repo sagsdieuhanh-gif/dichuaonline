@@ -18,6 +18,9 @@ jobs:
           node --check live/server.mjs
           node --check live/temple-hybrid.mjs
           node live/test-hybrid.mjs
+          node --check live/public-guest.mjs
+          node --check live/visit.js
+          node live/test-public-guest.mjs
           cp private/app.js /tmp/temple-internal-app.mjs
           node --check /tmp/temple-internal-app.mjs
       - name: Verify security invariants and deliverables
