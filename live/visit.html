@@ -41,11 +41,11 @@ button:disabled{opacity:.45;cursor:wait}.actions{display:flex;gap:9px;flex-wrap:
   <section class="card" aria-label="Xin vào chùa">
     <div class="topline"><span class="kicker">CHÁNH ĐIỆN TRỰC TUYẾN</span><span id="counter" class="counter">— / 100 vị trí</span></div>
     <h2>Thỉnh cầu vào chánh điện</h2>
-    <p>Nhân viên công ty và khách thập phương đều có thể xin vào. <b>Không cần đăng ký tài khoản.</b> Chỉ khi Trụ trì duyệt, nhân vật mới xuất hiện.</p>
+    <p>Nhân viên công ty và khách thập phương đều có thể bình luận để xin vào. <b>Không cần đăng ký tài khoản.</b> Bình luận “xin vô”, “Nam mô A Di Đà Phật” hoặc <b>bất kỳ nội dung nào</b> đều được chuyển tới Trụ trì chờ duyệt. Chỉ khi được duyệt, nhân vật mới xuất hiện.</p>
     <form id="joinForm">
       <div><label for="visitorName">Tên / Pháp danh hiển thị</label><input id="visitorName" maxlength="30" minlength="2" placeholder="Nhập tên của bạn" autocomplete="name" required></div>
-      <div><label for="joinComment">Bình luận xin vào</label><input id="joinComment" value="xin vô" maxlength="80" required></div>
-      <button class="primary" id="joinBtn" type="submit">🙏 GỬI LỜI XIN VÔ</button>
+      <div><label for="joinComment">Bình luận của bạn (nội dung bất kỳ)</label><input id="joinComment" placeholder="Ví dụ: Nam mô A Di Đà Phật" maxlength="120" required></div>
+      <button class="primary" id="joinBtn" type="submit">🙏 GỬI BÌNH LUẬN ĐỂ XIN VÀO</button>
     </form>
     <div id="notice" role="status" aria-live="polite"></div>
     <div id="joined" class="hidden">
