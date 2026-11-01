@@ -41,7 +41,7 @@ button.red{background:var(--red);border-color:#b84a33}
 #people td{padding:5px 8px;border-bottom:1px solid #2e1c10}
 #people td:last-child{text-align:right;color:var(--gold);font-variant-numeric:tabular-nums}
 #log{height:220px;overflow:auto;background:#0b0604;border:1px solid var(--line);border-radius:10px;padding:8px;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
-</style>
+#simulator{display:none!important}#guestRequests{max-height:360px;overflow:auto}#guestRequests .guest{border-bottom:1px solid #665033;padding:10px 0}#guestRequests button{margin:5px 6px 2px 0}</style>
 </head>
 <body>
 <header>
@@ -65,8 +65,14 @@ button.red{background:var(--red);border-color:#b84a33}
     <div id="people"><table><tbody id="peopleBody"><tr><td class="hint">Chưa có ai</td><td></td></tr></tbody></table></div>
   </section>
 
-  <section class="card">
-    <h2>2 · Thử tương tác</h2>
+  <section class="card"><h2>2 · Yêu cầu người thật từ TikTok</h2>
+    <p class="hint">Người xem bình luận <b>xin vào chùa</b>. Họ chỉ được vào sau khi Trụ trì xác nhận. Quà TikTok không cộng ví coin nội bộ.</p>
+    <p id="hybridMode" class="hint">Nếu đã kết nối Supabase riêng, phải phê duyệt tại trang <a href="../private/" target="_blank" rel="noopener">Quản trị nội bộ</a>.</p>
+    <div id="guestRequests">Chưa có ai xin vào chùa.</div>
+    <p class="hint">Không có người mẫu hoặc bot trong chánh điện thật.</p>
+  </section>
+  <section class="card" id="simulator">
+    <h2>Chế độ mô phỏng (đã khóa)</h2>
     <label for="simName">Tên người xem</label>
     <input id="simName" value="Minh An">
     <label for="simText">Bình luận / lời nguyện</label>
@@ -146,19 +152,34 @@ function setTT(st){
   const el=$('tt'); el.className='chip ' + (st.status==='connected'?'ok':st.status==='error'?'bad':'');
   el.textContent = st.status==='connected' ? `TikTok: @${st.uniqueId} ✓` : st.status==='connecting' ? `TikTok: đang kết nối @${st.uniqueId}…` : st.status==='error' ? 'TikTok: lỗi kết nối' : 'TikTok: chưa kết nối';
 }
+const pendingUsers=new Map();let dbMode=false;
+function renderRequests(){
+ const list=$('guestRequests');list.replaceChildren();
+ if(!pendingUsers.size){list.textContent='Chưa có yêu cầu. Bảo người xem bình luận: xin vào chùa.';return;}
+ for(const [id,g] of pendingUsers){
+   const r=document.createElement('div');r.className='guest';
+   const text=document.createElement('div');text.textContent=g.name+' (@'+id+') · '+(g.comment||'');r.appendChild(text);
+   for(const [label,allow] of [['Duyệt vào chùa',true],['Từ chối',false]]){
+    const btn=document.createElement('button');btn.textContent=label;btn.disabled=dbMode;
+    btn.onclick=()=>send('approveGuest',{id,allow});r.appendChild(btn);
+   }list.appendChild(r);
+ }
+}
 function connect(){
   ws = new WebSocket(`ws://${location.host}/ws?role=control`);
   ws.onopen = () => { $('srv').textContent='Server: đang chạy'; $('srv').className='chip ok'; };
   ws.onclose = () => { $('srv').textContent='Server: mất kết nối'; $('srv').className='chip bad'; setTimeout(connect, 2000); };
   ws.onmessage = e => {
     const m = JSON.parse(e.data);
-    if (m.t==='state'){ fillSettings(m.settings); setTT(m.tiktok); people.clear(); for (const v of m.viewers) people.set(v.id,v); renderPeople(); }
+    if (m.t==='state'){ fillSettings(m.settings); setTT(m.tiktok); people.clear(); for (const v of m.viewers) people.set(v.id,v); renderPeople(); dbMode=!!m.databaseMode;pendingUsers.clear();for(const g of m.pendingGuests||[])pendingUsers.set(g.id,g);$('hybridMode').textContent=dbMode?'Đã kết nối Supabase riêng. Trụ trì duyệt tại trang Nội bộ.':'Đang dùng phê duyệt cục bộ trên máy phát LIVE. Để đồng bộ với nhân viên, cấu hình Supabase riêng.';renderRequests(); }
     else if (m.t==='logs'){ $('log').textContent=''; m.lines.forEach(logLine); }
     else if (m.t==='log') logLine(m.line);
     else if (m.t==='tiktok') setTT(m);
     else if (m.t==='join'){ people.set(m.v.id,m.v); renderPeople(); }
     else if (m.t==='leave'){ people.delete(m.id); renderPeople(); }
     else if (m.t==='gift'){ const p=people.get(m.id); if(p){ p.coins=m.total; renderPeople(); } }
+    else if (m.t==='guest_request'){pendingUsers.set(m.guest.id,m.guest);renderRequests();}
+    else if(m.t==='guest_decision'){pendingUsers.delete(m.id);renderRequests();}
     else if (m.t==='bots') $('btnBots').textContent = m.on ? 'Tắt bot' : 'Bật bot';
   };
 }
