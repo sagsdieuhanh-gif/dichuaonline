@@ -22,7 +22,7 @@ function getBody(req){return new Promise((resolve,reject)=>{let body='';req.on('
 export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=3001,host='127.0.0.1'}){
  if(!hybrid||!viewers||!broadcast)throw Error('Missing shared LIVE state');
  const sessions=new Map();
- const allowedPath=new Set(['/','/visit','/api/me','/api/join','/api/ping','/api/message','/api/leave','/api/hall','/assets/hall.jpg','/assets/c_man.png','/assets/c_woman.png']);
+ const allowedPath=new Set(['/','/visit','/api/me','/api/join','/api/ping','/api/message','/api/leave','/api/hall','/visit.js','/assets/hall.jpg','/assets/c_man.png','/assets/c_woman.png']);
  const sweep=setInterval(()=>{
   const now=Date.now();
   for(const [token,s] of sessions){
@@ -45,10 +45,15 @@ export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=300
    // Same-origin checks prevent random websites from submitting requests with visitors' cookies.
    const origin=req.headers.origin;
    const hostHeader=req.headers.host;
-   if(!origin||!hostHeader||new URL(origin).host!==hostHeader){
+   let validOrigin=false;try{validOrigin=!!origin&&!!hostHeader&&new URL(origin).host===hostHeader}catch{}
+   if(!validOrigin){
     json(res,403,{error:'origin-mismatch'});return;
    }
    if(!/^application\/json(?:;|$)/i.test(req.headers['content-type']||'')){json(res,415,{error:'json-required'});return}
+  }
+  if(pathname==='/visit.js'){
+   if(req.method!=='GET'){json(res,405,{error:'method'});return}
+   const code=await readFile(path.join(HERE,'visit.js'));res.writeHead(200,{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'no-store'});res.end(code);return;
   }
   if(pathname==='/'||pathname==='/visit'){
    if(req.method!=='GET'){json(res,405,{error:'method'});return}
@@ -77,7 +82,7 @@ export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=300
    const seated=viewers.has(id)&&hybrid.approved.has(id);
    return {name:session.name,status:seated?'approved':hybrid.pending.has(id)?'pending':session.lastJoin?(session.left?'left':'not-approved'):'new',seatCount:viewers.size,capacity:100,group:viewers.get(id)?.group||null};
   }
-  if(pathname==='/api/me'){json(res,200,state());return}
+  if(pathname==='/api/me'){if(hybrid.approved.has(id)&&viewers.has(id))session.lastPing=Date.now();json(res,200,state());return}
   if(pathname==='/api/hall'){
    const people=[...viewers.values()].slice(0,100).map(v=>({name:v.name,group:v.group==='internal'?'internal':'tiktok',skin:v.skin==='woman'?'woman':'man'}));
    json(res,200,{people,count:people.length,capacity:100});return;
