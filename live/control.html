@@ -65,8 +65,8 @@ button.red{background:var(--red);border-color:#b84a33}
     <div id="people"><table><tbody id="peopleBody"><tr><td class="hint">Chưa có ai</td><td></td></tr></tbody></table></div>
   </section>
 
-  <section class="card"><h2>2 · Yêu cầu người thật từ TikTok</h2>
-    <p class="hint">Nhân viên công ty và khách TikTok đều bình luận <b>xin vô</b> hoặc <b>xin vào chùa</b> trong buổi LIVE, không cần đăng ký. Trụ trì phân loại <b>Nội bộ</b> hoặc <b>Khách TikTok</b> rồi duyệt. Quà TikTok không cộng vào ví coin.</p>
+  <section class="card"><h2>2 · Yêu cầu vào chánh điện (Web + TikTok)</h2>
+    <p class="hint">Nhân viên và khách TikTok bình luận <b>“xin vô”</b>, <b>“Nam mô A Di Đà Phật”</b> hoặc <b>bất kỳ bình luận có nội dung nào</b> (trên TikTok LIVE hoặc cổng web). Họ sẽ chờ Trụ trì phân loại <b>Nội bộ</b>/<b>Khách TikTok</b> và duyệt, không tự vào chánh điện. Quà TikTok không cộng vào ví coin.</p>
     <p id="hybridMode" class="hint">Nếu đã kết nối Supabase riêng, phải phê duyệt tại trang <a href="../private/" target="_blank" rel="noopener">Quản trị nội bộ</a>.</p>
     <div id="guestRequests">Chưa có ai xin vào chùa.</div>
     <p class="hint">Không có người mẫu hoặc bot trong chánh điện thật.</p>
@@ -155,7 +155,7 @@ function setTT(st){
 const pendingUsers=new Map();let dbMode=false;
 function renderRequests(){
  const list=$('guestRequests');list.replaceChildren();
- if(!pendingUsers.size){list.textContent='Chưa có yêu cầu. Bảo nhân viên và khách TikTok bình luận: xin vô.';return;}
+ if(!pendingUsers.size){list.textContent='Chưa có yêu cầu. Bất kỳ bình luận có nội dung nào đều được đưa vào hàng chờ duyệt.';return;}
  for(const [id,g] of pendingUsers){
    const r=document.createElement('div');r.className='guest';
    const text=document.createElement('div');text.textContent=g.name+' (@'+id+') · '+(g.comment||'');r.appendChild(text);
