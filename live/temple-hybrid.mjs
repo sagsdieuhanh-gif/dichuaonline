@@ -20,20 +20,25 @@ export function createHybrid({viewers,seat,broadcast,log}){
    if(!id||String(id).startsWith('sim_'))return false;
    const guest=record(id,name,avatar);
    if(approved.has(guest.id))return true;
-   // Both colleagues and TikTok guests use the same comment-only invitation.
-   // Accent-insensitive: "xin vô", "xin vào", "xin vào chùa", "xin vo", etc.
-   const words=String(comment||'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
-   if(/\bxin\s+(?:vo|vao)(?:\s+(?:chua|chanh\s+dien))?\b/u.test(words)){
-     const entry={...guest,comment:String(comment).slice(0,240)};
-     if(!pending.has(guest.id))broadcast({t:'guest_request',guest:entry},'control');
-     pending.set(guest.id,entry);log('TikTok xin vào chùa: '+entry.name);
-     if(dbEnabled)(async()=>{
-       const path='temple_tiktok_requests?tiktok_id=eq.'+encodeURIComponent(guest.id);
-       const existing=await request(path+'&select=tiktok_id');
-       const data={display_name:entry.name,last_comment:entry.comment,avatar_url:entry.avatar,updated_at:new Date().toISOString()};
-       if(existing?.length)await request(path,{method:'PATCH',body:JSON.stringify(data)});
-       else await request('temple_tiktok_requests',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({...data,tiktok_id:guest.id,status:'pending'})});
-     })().catch(e=>log('Không lưu được yêu cầu TikTok: '+e.message));
+   // Any nonempty real comment is a request, not just a particular phrase.
+   // Manual Trụ trì approval is still mandatory; never auto-seat a commenter.
+   const commentText=String(comment??'').trim().slice(0,240);
+   if(commentText){
+     if(pending.size>=300&&!pending.has(guest.id))return false;
+     const entry={...guest,comment:commentText};
+     const isNew=!pending.has(guest.id);
+     pending.set(guest.id,entry);
+     if(isNew){
+       broadcast({t:'guest_request',guest:entry},'control');
+       log('Yêu cầu từ bình luận '+(guest.id.startsWith('web:')?'web':'TikTok')+': '+entry.name);
+     }
+     if(dbEnabled && isNew)(async()=>{
+       const query='temple_tiktok_requests?tiktok_id=eq.'+encodeURIComponent(guest.id);
+       const existing=await request(query+'&select=tiktok_id');
+       const data={display_name:entry.name,last_comment:entry.comment,avatar_url:entry.avatar,updated_at:new Date().toISOString(),status:'pending',seat_no:null};
+       if(existing?.length)await request(query,{method:'PATCH',body:JSON.stringify(data)});
+       else await request('temple_tiktok_requests',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({...data,tiktok_id:guest.id})});
+     })().catch(e=>log('Không lưu được yêu cầu: '+e.message));
    }
    return false;
  }
