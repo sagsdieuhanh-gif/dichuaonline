@@ -58,7 +58,7 @@ function skinFromText(t){
 }
 const DEFAULT_SKINS = ['man', 'woman', 'woman', 'man', 'granny'];
 
-function pub(v){ return { id:v.id, name:v.name, skin:v.skin, avatar:v.avatar||'', coins:v.coins, demo:!!v.demo }; }
+function pub(v){ return { id:v.id, name:v.name, skin:v.skin, avatar:v.avatar||'', coins:0, liveGifts:v.liveGifts||0, group:v.group||'tiktok', demo:false }; }
 function snapshot(){ return { t:'state', settings, viewers:[...viewers.values()].map(pub), pendingGuests:[...hybrid.pending.values()], databaseMode:hybrid.dbEnabled, cap: capacity(), startedAt, tiktok: tiktokState }; }
 
 function seat(id, name, opts = {}){
@@ -68,7 +68,7 @@ function seat(id, name, opts = {}){
     return { v:null, isNew:false }; // full: do not evict verified people
   }
   v = { id, name: (name||id).slice(0, 18), skin: opts.skin || DEFAULT_SKINS[viewers.size % DEFAULT_SKINS.length],
-        avatar: opts.avatar || '', coins: 0, joinedAt: Date.now(), lastAt: Date.now(), demo: !!opts.demo };
+        avatar: opts.avatar || '', coins: 0, liveGifts:0, group:opts.group||'tiktok', joinedAt: Date.now(), lastAt: Date.now(), demo:false };
   viewers.set(id, v);
   broadcast({ t:'join', v: pub(v), cap: capacity() });
   return { v, isNew:true };
@@ -91,13 +91,13 @@ function onGift(id, name, giftName, count, diamonds, avatar){
   if(hybrid.giftForGuest(id,name,giftName,count,diamonds,avatar))return; // gift display, no wallet credit
   const { v } = seat(id, name, { avatar });
   if (!v) return;
-  const coins = Math.max(1, (diamonds || 1) * (count || 1));
-  v.coins += coins;
+  const giftValue = Math.max(1, (diamonds || 1) * (count || 1));
+  v.liveGifts = (v.liveGifts||0) + giftValue; // LIVE gift indicator, NEVER internal wallet coins
   const prayer = (v.lastText && Date.now() - v.lastTextAt < 90_000 && v.lastText.length > 6) ? v.lastText : pickPrayer();
-  const tier = coins >= 99 ? 3 : coins >= 10 ? 2 : 1;
+  const tier = giftValue >= 99 ? 3 : giftValue >= 10 ? 2 : 1;
   const line = `Nam mô A Di Đà Phật. Phật tử ${spoken(v.name)} thành tâm dâng ${giftName}${count > 1 ? ', ' + count + ' lần' : ''}. ${prayer}.`;
-  broadcast({ t:'gift', id, name: v.name, giftName, count, coins, total: v.coins, tier, prayer });
-  if (settings.gifts.readAll || coins >= settings.gifts.minDiamonds) say(line, { tag:'gift', id });
+  broadcast({ t:'gift', id, name: v.name, giftName, count, giftValue, liveTotal:v.liveGifts, tier, prayer });
+  if (settings.gifts.readAll || giftValue >= settings.gifts.minDiamonds) say(line, { tag:'gift', id });
 }
 
 function pickPrayer(){
@@ -181,19 +181,20 @@ async function disconnectTikTok(){ if (tiktok){ try { await tiktok.disconnect();
 /* ------------------------------------------------------------- test data */
 const DEMO_NAMES = ['Diệu Hạnh','Minh Tâm','Thiện Đức','Huệ An','Tịnh Nhã','Quảng Trí','Chơn Như','Pháp Hỷ','Nguyên Thanh','Tâm Đăng','Diệu Liên','Trí Hải','Phước Lộc','Hạnh Nguyện','Như Ý','Bảo Châu','Thanh Lương','Từ Tâm','An Lạc','Giác Hoa','Tuệ Minh','Liên Hương','Thu Hà','Ngọc Lan','Đức Anh','Hải Đăng','Mai Anh','Phương Thảo','Trung Kiên','Quang Huy','Bảo Ngọc','Diệu Linh'];
 function fillDemo(n){
+  return; // No sample visitors in the real temple.
   const have = [...viewers.values()].filter(v => v.demo).length;
   for (let i = have; i < n && viewers.size < 100; i++){
     const name = DEMO_NAMES[i % DEMO_NAMES.length] + (i >= DEMO_NAMES.length ? ' ' + (Math.floor(i / DEMO_NAMES.length) + 1) : '');
     seat('demo_' + i, name, { demo: true, skin: ['man','woman','woman','man','granny','monk','nun','child'][i % 8] });
   }
 }
-function clearSeats(){ viewers.clear(); broadcast(snapshot()); addLog('Đã làm trống bồ đoàn'); }
+function clearSeats(){ viewers.clear(); hybrid.approved.clear(); hybrid.pending.clear(); broadcast(snapshot()); addLog('Đã làm trống bồ đoàn'); }
 
 /* ------------------------------------------------------------- control */
 function onControl(m){
   switch (m.cmd){
     case 'connect': connectTikTok(m.uniqueId); break;
-    case 'approveGuest': hybrid.localDecide(String(m.id||''),Boolean(m.allow)); break;
+    case 'approveGuest': hybrid.localDecide(String(m.id||''),Boolean(m.allow),m.group==='internal'?'internal':'tiktok'); break;
     case 'disconnect': disconnectTikTok(); addLog('Đã ngắt kết nối TikTok'); break;
     case 'chat': addLog('Không mô phỏng người giả.'); break;
     case 'gift': addLog('Không mô phỏng quà từ người giả.'); break;
