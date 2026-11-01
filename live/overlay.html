@@ -144,16 +144,16 @@ function removeVisitor(id){ visitors.delete(id); reseat(); }
 let startedAt = Date.now();
 function updateCount(){ document.getElementById('count').textContent = `${visitors.size}/${cap}`; }
 function renderMerit(){
-  const top = [...visitors.values()].filter(v=>v.coins>0).sort((a,b)=>b.coins-a.coins).slice(0,5);
+  const top = [...visitors.values()].filter(v=>(v.liveGifts||0)>0).sort((a,b)=>(b.liveGifts||0)-(a.liveGifts||0)).slice(0,5);
   const ol = document.getElementById('meritList'); ol.innerHTML='';
   if (!top.length){ ol.innerHTML='<li class="empty">Chưa có</li>'; return; }
-  top.forEach((v,i)=>{ const li=document.createElement('li'); const a=document.createElement('span'); a.textContent=`${i+1}. ${v.name}`; const b=document.createElement('span'); b.textContent=v.coins; li.append(a,b); ol.append(li); });
+  top.forEach((v,i)=>{ const li=document.createElement('li'); const a=document.createElement('span'); a.textContent=`${i+1}. ${v.name}`; const b=document.createElement('span'); b.textContent=v.liveGifts||0; li.append(a,b); ol.append(li); });
 }
 setInterval(()=>{ const s=Math.floor((Date.now()-startedAt)/1000); document.getElementById('timer').textContent=[s/3600,s/60%60,s%60].map(x=>String(Math.floor(x)).padStart(2,'0')).join(':'); },1000);
 let giftHide=null;
 function showGift(m){
   document.getElementById('giftWho').textContent = m.name;
-  document.getElementById('giftWhat').textContent = `thành tâm dâng ${m.giftName}${m.count>1?' ×'+m.count:''} · công đức ${m.total}`;
+  document.getElementById('giftWhat').textContent = `đã gửi ${m.giftName}${m.count>1?' ×'+m.count:''} · quà TikTok (không phải coin nội bộ)`;
   document.getElementById('giftPray').textContent = '“' + m.prayer + '”';
   document.getElementById('chant').classList.remove('show');
   const el=document.getElementById('gift'); el.classList.add('show'); clearTimeout(giftHide); giftHide=setTimeout(()=>el.classList.remove('show'), m.tier>=3?9000:6500);
@@ -230,7 +230,7 @@ function connect(){
       case 'leave': removeVisitor(m.id); updateCount(); renderMerit(); break;
       case 'skin': { const v=visitors.get(m.id); if(v){ v.skin=m.skin; v.glow=.8; if(v.state!=='sit'){ v.state='sit'; v.frame=7; } } } break;
       case 'chat': { const v=visitors.get(m.id); if(v){ v.bubble={text:m.text, until:performance.now()+6000}; v.bow=.6; } } break;
-      case 'gift': { const v=visitors.get(m.id); if(v){ v.coins=m.total; giftFx(v,m.tier); } renderMerit(); showGift(m); } break;
+      case 'gift': { const v=visitors.get(m.id); if(v){ v.liveGifts=m.liveTotal||0; giftFx(v,m.tier); } renderMerit(); showGift(m); } break;
       case 'like': { const v=visitors.get(m.id); if(v) hearts(v,m.n); } break;
       case 'tts': queueTTS(m.url); break;
       case 'chant': showChant(m.text); bell(); break;
