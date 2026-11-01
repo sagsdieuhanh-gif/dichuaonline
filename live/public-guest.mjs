@@ -63,6 +63,9 @@ export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=300
    if(!body){json(res,404,{error:'missing-image'});return}
    res.writeHead(200,{'Content-Type':ext==='.jpg'?'image/jpeg':'image/png','Cache-Control':'public,max-age=3600'});res.end(body);return;
   }
+  // Hall roster is public and read-only; it must NOT create/overwrite the visitor cookie.
+  // The page can request /api/me and /api/hall concurrently on first load.
+
   let token=cookies(req.headers.cookie).temple_guest;
   let session=token&&/^[a-f0-9]{48}$/.test(token)?sessions.get(token):null;
   if(!session){
