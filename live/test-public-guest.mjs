@@ -18,6 +18,7 @@ try{
  let first=await request('/api/me');
  assert.equal(first.status,200);assert.equal(first.data.status,'new');
  const cookie=first.cookie.split(';')[0];assert.match(cookie,/^temple_guest=[a-f0-9]{48}$/);
+ const beforeHallSessions=gw.sessions.size;let rosterBefore=await request('/api/hall');assert.equal(rosterBefore.status,200);assert.equal(rosterBefore.cookie,null,'Public roster must not reset visitor identity');assert.equal(gw.sessions.size,beforeHallSessions);
  let page=await request('/');assert.equal(page.status,200);assert.match(page.data,/Không cần đăng ký/i);
  let script=await request('/visit.js');assert.equal(script.status,200);assert.match(script.data,/api\('/);
  let admin=await request('/live/control.html');assert.equal(admin.status,404);
