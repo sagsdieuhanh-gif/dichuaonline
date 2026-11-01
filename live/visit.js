@@ -26,7 +26,7 @@ function showState(s){
  lastState=status;
  if(status==='left'||status==='not-approved'){
   const retry=document.getElementById('retryBtn');
-  if(!retry){const b=document.createElement('button');b.id='retryBtn';b.type='button';b.textContent='Xin vào lại';b.onclick=()=>{form.classList.remove('hidden');joined.classList.add('hidden');$('joinComment').value='xin vô'};joined.appendChild(b)}
+  if(!retry){const b=document.createElement('button');b.id='retryBtn';b.type='button';b.textContent='Xin vào lại';b.onclick=()=>{form.classList.remove('hidden');joined.classList.add('hidden');$('joinComment').value=''};joined.appendChild(b)}
  }
 }
 async function update(){
@@ -43,7 +43,7 @@ async function update(){
 }
 form.addEventListener('submit',async e=>{
  e.preventDefault();if(pending)return;pending=true;btn.disabled=true;
- try{const result=await api('join',{name:$('visitorName').value,comment:$('joinComment').value});showState(result);notice('Đã gửi bình luận tới Trụ trì.')}
+ try{const result=await api('join',{name:$('visitorName').value,comment:$('joinComment').value});showState(result);notice('Đã gửi bình luận tới Trụ trì, chờ duyệt.')}
  catch(e){notice(e.message,true)}
  finally{btn.disabled=false;pending=false}
 });
