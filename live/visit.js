@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const notice=(s,bad=false)=>{const el=$('notice');el.textContent=s;el.classList.toggle('bad',bad)};
 const btn=$('joinBtn'),form=$('joinForm'),joined=$('joined'),joinStatus=$('joinStatus'),joinDesc=$('joinDescription');
-let lastState='',pending=false;
+let lastState='',pending=false,chatRevision=-1,chatLoading=false,approved=false;
 async function api(route,body){
  const opt=body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
  const r=await fetch('/api/'+route,{...opt,credentials:'same-origin',cache:'no-store'});
@@ -11,11 +11,14 @@ async function api(route,body){
 }
 function showState(s){
  const status=s.status||'new';
+ approved=status==='approved';
+ $('chatCard').classList.toggle('hidden',!approved);
+ if(!approved){chatRevision=-1;$('chatLog').replaceChildren()}
  $('counter').textContent=(s.seatCount||0)+' / 100 vị trí';
  if(status==='new'){form.classList.remove('hidden');joined.classList.add('hidden');return}
  form.classList.add('hidden');joined.classList.remove('hidden');
  $('sayPrayer').disabled=status!=='approved';
- $('messageBox').classList.toggle('hidden',status!=='approved'||$('messageBox').dataset.open!=='1');
+ $('messageBox').classList.add('hidden');
  let title,desc;
  if(status==='pending'){title='⏳ Đang chờ Trụ trì duyệt';desc='Yêu cầu của bạn đã chuyển tới Trụ trì. Vui lòng giữ trang này mở, trạng thái sẽ cập nhật tự động.'}
  else if(status==='approved'){title='🙏 Đã được duyệt vào chánh điện';desc='Bạn đã có một vị trí trong chánh điện. Hãy giữ trang mở để duy trì hiện diện.'}
@@ -38,7 +41,7 @@ async function update(){
   const list=$('people');list.replaceChildren();
   if(!hall.people.length){const text=document.createElement('span');text.className='note';text.textContent='Chánh điện đang trống, chờ những người thật xin vào.';list.append(text)}
   else hall.people.forEach(p=>{const pill=document.createElement('span');pill.className='person';pill.textContent=p.name+' · '+(p.group==='internal'?'Nội bộ':'Khách');list.append(pill)});
-  if(me.status==='approved')await api('ping',{}).catch(()=>{});
+  if(me.status==='approved'){await api('ping',{}).catch(()=>{});await updateChat()}
  }catch(e){notice('Mất kết nối máy chủ LIVE: '+e.message,true)}
 }
 form.addEventListener('submit',async e=>{
@@ -47,13 +50,46 @@ form.addEventListener('submit',async e=>{
  catch(e){notice(e.message,true)}
  finally{btn.disabled=false;pending=false}
 });
-$('sayPrayer').addEventListener('click',()=>{$('messageBox').dataset.open=$('messageBox').dataset.open==='1'?'0':'1';$('messageBox').classList.toggle('hidden',$('messageBox').dataset.open!=='1')});
-$('sendPrayer').addEventListener('click',async()=>{
- try{await api('message',{text:$('prayerText').value});$('prayerText').value='';notice('Đã gửi lời niệm Phật vào chánh điện.')}
- catch(e){notice(e.message,true)}
+// Share one room with all approved web and TikTok participants; never insert message text as HTML.
+async function updateChat(){
+ if(!approved||document.hidden||chatLoading)return;
+ chatLoading=true;
+ try{
+  const data=await api('chat');
+  $('chatText').disabled=!!data.muted;
+  $('chatSend').disabled=!!data.muted;
+  $('chatHint').textContent=data.muted?'Trụ trì đã tạm khóa quyền chat của bạn. Bạn vẫn có thể đọc tin nhắn.':'Chỉ những người đã được Trụ trì duyệt mới thấy và gửi tin nhắn. Trụ trì có thể xóa tin hoặc khóa chat.';
+  if(data.revision!==chatRevision){
+   chatRevision=data.revision;
+   const list=$('chatLog'),stick=list.scrollHeight-list.scrollTop-list.clientHeight<65;
+   list.replaceChildren();
+   if(!data.messages.length){const n=document.createElement('span');n.className='note';n.textContent='Chưa có tin nhắn. Hãy gửi lời chào đầu tiên.';list.append(n)}
+   else data.messages.forEach(m=>{
+    const item=document.createElement('div');item.className='chatitem';
+    const meta=document.createElement('div');meta.className='chatmeta';
+    const t=new Date(m.at);const time=Number.isNaN(t.getTime())?'':t.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+    meta.textContent=m.name+' · '+(m.source==='tiktok'?'TikTok LIVE':'Web')+' · '+time;
+    const content=document.createElement('div');content.className='chatbody';content.textContent=m.text;
+    item.append(meta,content);list.append(item);
+   });
+   if(stick||data.messages.length<=3)list.scrollTop=list.scrollHeight;
+  }
+ }catch(e){if(approved)$('chatHint').textContent='Không tải được phòng chat: '+e.message}
+ finally{chatLoading=false}
+}
+$('sayPrayer').addEventListener('click',()=>{if(approved){$('chatCard').scrollIntoView({behavior:'smooth',block:'center'});$('chatText').focus()}});
+$('chatForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!approved)return;
+ const field=$('chatText'),value=field.value.trim(),btn=$('chatSend');if(!value)return;
+ btn.disabled=true;
+ try{await api('message',{text:value});field.value='';await updateChat()}
+ catch(err){$('chatHint').textContent=err.message}
+ finally{btn.disabled=false}
 });
+
 $('leaveBtn').addEventListener('click',async()=>{try{showState(await api('leave',{}));notice('Bạn đã rời chánh điện.')}catch(e){notice(e.message,true)}});
 setInterval(update,7000);
+setInterval(updateChat,2800);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
 update();
 })();
