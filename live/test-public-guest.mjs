@@ -5,7 +5,7 @@ const viewers=new Map(),events=[];
 function broadcast(event,only){events.push({event,only})}
 function seat(id,name,opts={}){if(viewers.has(id))return {v:viewers.get(id),isNew:false};if(viewers.size>=100)return {v:null,isNew:false};
  const v={id,name,...opts};viewers.set(id,v);broadcast({t:'join',v});return {v,isNew:true};}
-const hybrid=createHybrid({viewers,seat,broadcast});
+const hybrid=createHybrid({viewers,seat,broadcast,log:()=>{}});
 const gw=createGuestGateway({hybrid,viewers,broadcast,port:0});
 await gw.start();
 const url='http://127.0.0.1:'+gw.server.address().port;
