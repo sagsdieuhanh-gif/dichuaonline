@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {createHybrid} from './temple-hybrid.mjs';
+const viewers=new Map(),events=[],logs=[];
+function broadcast(x,only){events.push({event:x,only})}
+function seat(id,name,opts){if(viewers.has(id))return {v:viewers.get(id),isNew:false};
+ if(viewers.size>=100)return {v:null,isNew:false};
+ const v={id,name,...opts};viewers.set(id,v);broadcast({t:'join',v});return {v,isNew:true};}
+const hybrid=createHybrid({viewers,seat,broadcast,log:x=>logs.push(x)});
+assert.equal(hybrid.dbEnabled,false);
+assert.equal(hybrid.gateChat('user-1','Hoa','Nam mô A Di Đà Phật',''),false);
+assert.equal(hybrid.pending.size,0);
+assert.equal(viewers.size,0,'Unapproved chat MUST NOT seat a viewer');
+assert.equal(hybrid.gateChat('user-1','Hoa','xin vào chùa',''),false);
+assert.equal(hybrid.pending.size,1);
+assert.equal(hybrid.gateChat('sim_guest','Mẫu','xin vào chùa',''),false);
+assert.equal(hybrid.pending.size,1,'No fake user can register');
+assert.equal(hybrid.giftForGuest('user-2','An','Hoa sen',1,30,''),true);
+assert.equal(viewers.size,0,'Gift without approval MUST NOT generate attendance');
+assert.ok(events.some(x=>x.event.t==='gift'&&x.event.name==='An'));
+hybrid.localDecide('user-1',true);
+assert.equal(viewers.size,1);
+assert.equal(hybrid.gateChat('user-1','Hoa','Nam mô A Di Đà Phật',''),true);
+assert.equal(hybrid.giftForGuest('user-1','Hoa','Hoa hồng',1,1,''),false);
+hybrid.gateChat('user-3','Hương','xin vào chùa','');
+hybrid.localDecide('user-3',false);
+assert.equal(viewers.size,1);
+assert.equal(hybrid.approved.has('user-3'),false);
+hybrid.gateChat('user-4','Thảo','xin vào chùa','');
+for(let i=0;i<99;i++)seat('internal:'+i,'Nhân viên '+i,{});
+assert.equal(viewers.size,100);
+hybrid.localDecide('user-4',true);
+assert.equal(viewers.size,100,'Full room must not evict existing real attendees');
+assert.equal(hybrid.approved.has('user-4'),false);
+console.log('PASS: guest request, admin approval/denial, gift without admission, no simulation, 100-capacity no eviction');
