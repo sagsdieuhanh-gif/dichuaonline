@@ -66,7 +66,7 @@ button.red{background:var(--red);border-color:#b84a33}
   </section>
 
   <section class="card"><h2>2 · Yêu cầu người thật từ TikTok</h2>
-    <p class="hint">Người xem bình luận <b>xin vào chùa</b>. Họ chỉ được vào sau khi Trụ trì xác nhận. Quà TikTok không cộng ví coin nội bộ.</p>
+    <p class="hint">Nhân viên công ty và khách TikTok đều bình luận <b>xin vô</b> hoặc <b>xin vào chùa</b> trong buổi LIVE, không cần đăng ký. Trụ trì phân loại <b>Nội bộ</b> hoặc <b>Khách TikTok</b> rồi duyệt. Quà TikTok không cộng vào ví coin.</p>
     <p id="hybridMode" class="hint">Nếu đã kết nối Supabase riêng, phải phê duyệt tại trang <a href="../private/" target="_blank" rel="noopener">Quản trị nội bộ</a>.</p>
     <div id="guestRequests">Chưa có ai xin vào chùa.</div>
     <p class="hint">Không có người mẫu hoặc bot trong chánh điện thật.</p>
@@ -143,9 +143,9 @@ function readSettings(){ const o={}; for (const k of SETTING_IDS){ const el=$(k)
 const people = new Map();
 function renderPeople(){
   const tb=$('peopleBody'); tb.innerHTML='';
-  const list=[...people.values()].sort((a,b)=>b.coins-a.coins || a.name.localeCompare(b.name));
+  const list=[...people.values()].sort((a,b)=>(b.liveGifts||0)-(a.liveGifts||0) || a.name.localeCompare(b.name));
   if (!list.length){ tb.innerHTML='<tr><td class="hint">Chưa có ai</td><td></td></tr>'; }
-  list.forEach((p,i)=>{ const tr=document.createElement('tr'); const a=document.createElement('td'); a.textContent=`${String(i+1).padStart(2,'0')}  ${p.name}`; const b=document.createElement('td'); b.textContent=p.coins? p.coins+' ✧':''; tr.append(a,b); tb.append(tr); });
+  list.forEach((p,i)=>{ const tr=document.createElement('tr'); const a=document.createElement('td'); a.textContent=`${String(i+1).padStart(2,'0')}  ${p.name} · ${p.group==='internal'?'Nội bộ':'Khách TikTok'}`; const b=document.createElement('td'); b.textContent=p.liveGifts?'Quà LIVE: '+p.liveGifts:''; tr.append(a,b); tb.append(tr); });
   $('cnt').textContent = `${people.size} người`;
 }
 function setTT(st){
@@ -155,13 +155,16 @@ function setTT(st){
 const pendingUsers=new Map();let dbMode=false;
 function renderRequests(){
  const list=$('guestRequests');list.replaceChildren();
- if(!pendingUsers.size){list.textContent='Chưa có yêu cầu. Bảo người xem bình luận: xin vào chùa.';return;}
+ if(!pendingUsers.size){list.textContent='Chưa có yêu cầu. Bảo nhân viên và khách TikTok bình luận: xin vô.';return;}
  for(const [id,g] of pendingUsers){
    const r=document.createElement('div');r.className='guest';
    const text=document.createElement('div');text.textContent=g.name+' (@'+id+') · '+(g.comment||'');r.appendChild(text);
+   const sel=document.createElement('select');sel.setAttribute('aria-label','Phân loại người tham gia');
+   for(const [v,t] of [['internal','Nhân viên nội bộ'],['tiktok','Khách TikTok']]){const o=document.createElement('option');o.value=v;o.textContent=t;sel.append(o);}
+   sel.value='internal';sel.disabled=dbMode;r.appendChild(sel);
    for(const [label,allow] of [['Duyệt vào chùa',true],['Từ chối',false]]){
     const btn=document.createElement('button');btn.textContent=label;btn.disabled=dbMode;
-    btn.onclick=()=>send('approveGuest',{id,allow});r.appendChild(btn);
+    btn.onclick=()=>send('approveGuest',{id,allow,group:sel.value});r.appendChild(btn);
    }list.appendChild(r);
  }
 }
@@ -177,8 +180,9 @@ function connect(){
     else if (m.t==='tiktok') setTT(m);
     else if (m.t==='join'){ people.set(m.v.id,m.v); renderPeople(); }
     else if (m.t==='leave'){ people.delete(m.id); renderPeople(); }
-    else if (m.t==='gift'){ const p=people.get(m.id); if(p){ p.coins=m.total; renderPeople(); } }
+    else if (m.t==='gift'){ const p=people.get(m.id); if(p){p.liveGifts=m.liveTotal||0;renderPeople();} }
     else if (m.t==='guest_request'){pendingUsers.set(m.guest.id,m.guest);renderRequests();}
+    else if (m.t==='admission_group'){ const p=people.get(m.id);if(p){p.group=m.group;renderPeople();} }
     else if(m.t==='guest_decision'){pendingUsers.delete(m.id);renderRequests();}
     else if (m.t==='bots') $('btnBots').textContent = m.on ? 'Tắt bot' : 'Bật bot';
   };
