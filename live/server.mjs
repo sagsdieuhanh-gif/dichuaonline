@@ -13,6 +13,7 @@ import { WebSocketServer } from 'ws';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { createHybrid } from './temple-hybrid.mjs';
 import { createGuestGateway } from './public-guest.mjs';
+import { createTempleChat } from './temple-chat.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');            // repo root: serves /assets, /live
@@ -35,7 +36,8 @@ const settings = {
   gifts: { readAll: true, minDiamonds: 1 },
 };
 const viewers = new Map();
-const hybrid=createHybrid({viewers,seat,broadcast,log:addLog});           // id -> { id, name, skin, avatar, coins, joinedAt, lastAt, lastText, lastTextAt, demo }
+const hybrid=createHybrid({viewers,seat,broadcast,log:addLog});
+const chat=createTempleChat({isApproved:id=>viewers.has(id)&&hybrid.approved.has(id),broadcast});           // id -> { id, name, skin, avatar, coins, joinedAt, lastAt, lastText, lastTextAt, demo }
 const startedAt = Date.now();
 let tiktok = null, tiktokState = { status: 'idle', uniqueId: '', error: '' };
 const log = [];
@@ -84,7 +86,7 @@ function onChat(id, name, text, avatar){
   if (!v) return;
   if (!isNew && want && want !== v.skin){ v.skin = want; broadcast({ t:'skin', id, skin: want }); }
   v.lastText = text; v.lastTextAt = Date.now();
-  broadcast({ t:'chat', id, name: v.name, text });
+  chat.post({id,name:v.name,text,group:v.group,source:'tiktok'});
 }
 
 function onGift(id, name, giftName, count, diamonds, avatar){
@@ -196,6 +198,9 @@ function onControl(m){
   switch (m.cmd){
     case 'connect': connectTikTok(m.uniqueId); break;
     case 'approveGuest': hybrid.localDecide(String(m.id||''),Boolean(m.allow),m.group==='internal'?'internal':'tiktok'); break;
+    case 'chatDelete': chat.remove(m.seq); break;
+    case 'chatMute': chat.mute(String(m.id||''),Boolean(m.muted)); break;
+    case 'chatClear': chat.clear(); break;
     case 'disconnect': disconnectTikTok(); addLog('Đã ngắt kết nối TikTok'); break;
     case 'chat': addLog('Không mô phỏng người giả.'); break;
     case 'gift': addLog('Không mô phỏng quà từ người giả.'); break;
@@ -296,7 +301,7 @@ function broadcast(msg, only){ const s = JSON.stringify(msg); for (const c of ws
 wss.on('connection', (ws, req) => {
   ws.role = new URL(req.url, 'http://x').searchParams.get('role') === 'control' ? 'control' : 'overlay';
   ws.send(JSON.stringify(snapshot()));
-  if (ws.role === 'control') ws.send(JSON.stringify({ t:'logs', lines: log }));
+  if (ws.role === 'control'){ ws.send(JSON.stringify({ t:'logs', lines: log }));ws.send(JSON.stringify({t:'chat_state',...chat.forAdmin()})); }
   ws.on('message', buf => {
     if (ws.role !== 'control') return;                          // overlays only listen
     try { const m = JSON.parse(buf); if (m && m.t === 'ctl') onControl(m); } catch (e) { addLog('Lệnh lỗi: ' + e.message); }
@@ -304,5 +309,5 @@ wss.on('connection', (ws, req) => {
 });
 server.listen(PORT, HOST, () => addLog(`Server chạy tại http://localhost:${PORT}  ·  Bảng điều khiển: http://localhost:${PORT}/live/control.html  ·  Overlay: http://localhost:${PORT}/live/overlay.html`));
 // Separate public visitor port. Do NOT tunnel port 3000, which contains privileged controls.
-const guestGateway=createGuestGateway({hybrid,viewers,broadcast,log:addLog,host:'127.0.0.1',port:+process.env.GUEST_PORT||3001});
+const guestGateway=createGuestGateway({hybrid,viewers,chat,broadcast,log:addLog,host:'127.0.0.1',port:+process.env.GUEST_PORT||3001});
 guestGateway.start().catch(e=>addLog('Không mở được cổng xin vào trên web: '+e.message));
