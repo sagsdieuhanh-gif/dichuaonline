@@ -66,6 +66,10 @@ export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=300
   // Hall roster is public and read-only; it must NOT create/overwrite the visitor cookie.
   // The page can request /api/me and /api/hall concurrently on first load.
 
+  if(pathname==='/api/hall'){
+   const people=[...viewers.values()].slice(0,100).map(v=>({name:v.name,group:v.group==='internal'?'internal':'tiktok',skin:v.skin==='woman'?'woman':'man'}));
+   json(res,200,{people,count:people.length,capacity:100});return;
+  }
   let token=cookies(req.headers.cookie).temple_guest;
   let session=token&&/^[a-f0-9]{48}$/.test(token)?sessions.get(token):null;
   if(!session){
@@ -83,10 +87,6 @@ export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=300
    return {name:session.name,status:seated?'approved':hybrid.pending.has(id)?'pending':session.lastJoin?(session.left?'left':'not-approved'):'new',seatCount:viewers.size,capacity:100,group:viewers.get(id)?.group||null};
   }
   if(pathname==='/api/me'){if(hybrid.approved.has(id)&&viewers.has(id))session.lastPing=Date.now();json(res,200,state());return}
-  if(pathname==='/api/hall'){
-   const people=[...viewers.values()].slice(0,100).map(v=>({name:v.name,group:v.group==='internal'?'internal':'tiktok',skin:v.skin==='woman'?'woman':'man'}));
-   json(res,200,{people,count:people.length,capacity:100});return;
-  }
   if(req.method!=='POST'){json(res,405,{error:'method'});return}
   let data;try{data=await getBody(req)}catch{json(res,400,{error:'invalid-body'});return}
   if(pathname==='/api/join'){
