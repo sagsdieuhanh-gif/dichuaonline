@@ -11,10 +11,7 @@ const HERE=path.dirname(fileURLToPath(import.meta.url));
 const MAX_BODY=2048;
 const LIMIT_PENDING=300;
 const cleanName=s=>String(s||'').trim().replace(/\s+/g,' ').replace(/[<>\u0000-\u001f]/g,'').slice(0,30);
-const joinPhrase=s=>{
- const v=String(s||'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
- return /^xin (?:vo|vao)(?: (?:chua|chanh dien))?$/.test(v);
-};
+const hasComment=s=>String(s??'').trim().length>0;
 function cookies(header){return Object.fromEntries(String(header||'').split(';').map(k=>k.trim().split('=')).filter(a=>a.length===2));}
 function json(res,status,data,extra={}){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...extra});res.end(JSON.stringify(data));}
 function getBody(req){return new Promise((resolve,reject)=>{let body='';req.on('data',part=>{body+=part;if(body.length>MAX_BODY){reject(Error('too-large'));req.destroy();}});req.on('end',()=>{try{resolve(JSON.parse(body||'{}'))}catch{reject(Error('invalid-json'))}});req.on('error',reject);});}
@@ -91,11 +88,11 @@ export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=300
   let data;try{data=await getBody(req)}catch{json(res,400,{error:'invalid-body'});return}
   if(pathname==='/api/join'){
    const name=cleanName(data.name);
-   if(name.length<2||!joinPhrase(data.comment)){json(res,400,{error:'Nhập tên và bình luận đúng: xin vô'});return}
+   if(name.length<2||!hasComment(data.comment)){json(res,400,{error:'Nhập tên và một bình luận có nội dung bất kỳ'});return}
    if(session.lastJoin && Date.now()-session.lastJoin<10000){json(res,429,{error:'Xin chờ trước khi gửi lại'});return}
    if(hybrid.pending.size>=LIMIT_PENDING&&!hybrid.pending.has(id)){json(res,429,{error:'Hàng chờ hiện đã đầy'});return}
    session.lastJoin=Date.now();session.lastPing=Date.now();session.left=false;session.name=name;
-   hybrid.gateChat(id,name,'xin vô','');
+   hybrid.gateChat(id,name,String(data.comment).trim().slice(0,240),'');
    json(res,200,state());return;
   }
   if(pathname==='/api/ping'){
