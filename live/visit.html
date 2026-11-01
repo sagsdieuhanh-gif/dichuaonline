@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#160b08">
+<meta name="description" content="Chánh Điện Tịnh Tâm · Xin vào lễ Phật, chờ Trụ trì duyệt. Không cần đăng ký.">
+<title>Xin vào chánh điện · Tịnh Tâm</title>
+<style>
+:root{color-scheme:dark;--gold:#ebc77a;--muted:#dcc7a6;--line:rgba(240,190,96,.3)}
+*{box-sizing:border-box}body{margin:0;background:#150e0a;color:#fff4e1;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100dvh}
+.backdrop{position:fixed;inset:0;background:linear-gradient(180deg,rgba(19,10,7,.56),rgba(19,10,7,.82) 50%,#110b09 96%),url('/assets/hall.jpg') center 38%/cover no-repeat;z-index:-1}
+main{max-width:750px;margin:auto;padding:clamp(24px,5vw,48px) 18px 60px}
+.eyebrow{text-align:center;letter-spacing:.24em;text-transform:uppercase;font-size:11px;color:var(--gold);font-weight:700}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(34px,7vw,58px);margin:10px 0 5px;text-align:center;color:#ffda92;letter-spacing:.01em}
+.subtitle{text-align:center;color:#f7e2c0;font-family:Georgia,serif;font-size:17px;margin:0 0 24px}
+.card{background:rgba(21,12,10,.90);border:1px solid var(--line);border-radius:20px;padding:clamp(18px,4vw,27px);box-shadow:0 12px 48px rgba(0,0,0,.3);backdrop-filter:blur(9px);margin-bottom:16px}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.kicker{color:var(--gold);font-size:12px;font-weight:700;letter-spacing:.12em}
+.counter{color:#efd6a6;font-size:13px;background:#342219;padding:7px 11px;border:1px solid var(--line);border-radius:999px}
+h2{font-size:20px;font-family:Georgia,serif;margin:12px 0 13px}
+p{line-height:1.6;margin:10px 0;color:var(--muted)}form{display:grid;gap:12px}
+label{display:block;font-size:13px;color:#f0d9b6;margin-bottom:6px}
+input,textarea{display:block;width:100%;border-radius:10px;border:1px solid #725031;color:#fff3df;background:#120e0b;padding:13px;font:inherit;outline:none}
+input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px #edbe6833}
+textarea{resize:vertical;min-height:74px}button{cursor:pointer;font:700 14px inherit;border-radius:11px;border:1px solid var(--line);padding:12px 16px;color:#fcdfac;background:#432e1c}
+button.primary{background:linear-gradient(135deg,#f2d08b,#b87e36);color:#261207;border:0;box-shadow:0 4px 14px #ad793d47}
+button:disabled{opacity:.45;cursor:wait}.actions{display:flex;gap:9px;flex-wrap:wrap}.actions>*{flex:1}
+#notice{min-height:28px;font-size:13px;color:#ffe1a7;margin-top:10px}
+#notice.bad{color:#ffb1a8}.status{font-size:17px;color:#f9d88b;font-weight:650}
+.hidden{display:none!important}
+.people{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0;max-height:235px;overflow:auto}
+.person{border:1px solid var(--line);background:#2f2019;border-radius:999px;padding:6px 12px;font-size:12px}
+.note{font-size:12px;color:#cbb18b}.avatar{width:40px;height:40px;object-fit:contain;vertical-align:middle}
+.footer{text-align:center;font-size:12px;color:#bfa47c;line-height:1.6;padding:14px}
+@media(max-width:430px){.card{border-radius:14px}.actions{flex-direction:column}.subtitle{font-size:15px}}
+</style></head><body>
+<div class="backdrop" aria-hidden="true"></div>
+<main>
+  <div class="eyebrow">Nam Mô A Di Đà Phật</div>
+  <h1>Chánh Điện Tịnh Tâm</h1>
+  <p class="subtitle">Nhất tâm hướng Phật · Chung lòng bình an</p>
+  <section class="card" aria-label="Xin vào chùa">
+    <div class="topline"><span class="kicker">CHÁNH ĐIỆN TRỰC TUYẾN</span><span id="counter" class="counter">— / 100 vị trí</span></div>
+    <h2>Thỉnh cầu vào chánh điện</h2>
+    <p>Nhân viên công ty và khách thập phương đều có thể xin vào. <b>Không cần đăng ký tài khoản.</b> Chỉ khi Trụ trì duyệt, nhân vật mới xuất hiện.</p>
+    <form id="joinForm">
+      <div><label for="visitorName">Tên / Pháp danh hiển thị</label><input id="visitorName" maxlength="30" minlength="2" placeholder="Nhập tên của bạn" autocomplete="name" required></div>
+      <div><label for="joinComment">Bình luận xin vào</label><input id="joinComment" value="xin vô" maxlength="80" required></div>
+      <button class="primary" id="joinBtn" type="submit">🙏 GỬI LỜI XIN VÔ</button>
+    </form>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <div id="joined" class="hidden">
+      <div id="joinStatus" class="status"></div>
+      <p id="joinDescription"></p>
+      <div class="actions"><button id="sayPrayer" type="button">💬 Gửi lời niệm Phật</button><button id="leaveBtn" type="button">Rời chánh điện</button></div>
+      <div id="messageBox" class="hidden"><label for="prayerText">Lời niệm / lời nguyện</label><textarea id="prayerText" maxlength="110" placeholder="Nam mô A Di Đà Phật"></textarea><button id="sendPrayer" type="button">Gửi bình luận</button></div>
+    </div>
+  </section>
+  <section class="card" aria-label="Người đang ngồi trong chánh điện">
+    <div class="topline"><span class="kicker">NGƯỜI THẬT ĐÃ ĐƯỢC DUYỆT</span><span class="counter" id="peopleCount">0 người</span></div>
+    <p class="note">Danh sách chỉ hiện người được Trụ trì chấp thuận. Một người có thể vào qua bình luận trên web hoặc TikTok LIVE.</p>
+    <div id="people" class="people"><span class="note">Chưa có người tham gia.</span></div>
+  </section>
+  <p class="footer">Trụ trì duyệt mọi yêu cầu · Tối đa 100 vị trí · Không có nhân vật giả · Quà TikTok và coin nội bộ là hai hệ thống riêng biệt.<br>Không chia sẻ thông tin nhạy cảm trong lời nguyện công khai.</p>
+</main>
+<script src="/visit.js" defer></script>
+</body></html>
