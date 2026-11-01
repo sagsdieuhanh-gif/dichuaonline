@@ -20,7 +20,7 @@ export function createTempleChat({isApproved,broadcast,limit=80,clock=()=>Date.n
   messages.push(m);if(messages.length>limit)messages.shift();
   revision++;
   broadcast({t:'chat',id,name:m.name,text:m.text}); // retain the existing on-screen speech bubble
-  broadcast({t:'room_chat',message:publicMessage(m),revision},'control');
+  broadcast({t:'room_chat',message:{...publicMessage(m),userId:m.userId},revision},'control');
   return {ok:true,message:publicMessage(m)};
  }
  function remove(messageSeq){
