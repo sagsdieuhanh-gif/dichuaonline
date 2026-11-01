@@ -11,6 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
+import { createHybrid } from './temple-hybrid.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');            // repo root: serves /assets, /live
@@ -32,7 +33,8 @@ const settings = {
   joinOnEnter: false,                // also seat viewers who only enter the room
   gifts: { readAll: true, minDiamonds: 1 },
 };
-const viewers = new Map();           // id -> { id, name, skin, avatar, coins, joinedAt, lastAt, lastText, lastTextAt, demo }
+const viewers = new Map();
+const hybrid=createHybrid({viewers,seat,broadcast,log:addLog});           // id -> { id, name, skin, avatar, coins, joinedAt, lastAt, lastText, lastTextAt, demo }
 const startedAt = Date.now();
 let tiktok = null, tiktokState = { status: 'idle', uniqueId: '', error: '' };
 const log = [];
@@ -57,15 +59,13 @@ function skinFromText(t){
 const DEFAULT_SKINS = ['man', 'woman', 'woman', 'man', 'granny'];
 
 function pub(v){ return { id:v.id, name:v.name, skin:v.skin, avatar:v.avatar||'', coins:v.coins, demo:!!v.demo }; }
-function snapshot(){ return { t:'state', settings, viewers:[...viewers.values()].map(pub), cap: capacity(), startedAt, tiktok: tiktokState }; }
+function snapshot(){ return { t:'state', settings, viewers:[...viewers.values()].map(pub), pendingGuests:[...hybrid.pending.values()], databaseMode:hybrid.dbEnabled, cap: capacity(), startedAt, tiktok: tiktokState }; }
 
 function seat(id, name, opts = {}){
   let v = viewers.get(id);
   if (v){ v.lastAt = Date.now(); if (opts.avatar) v.avatar = opts.avatar; return { v, isNew:false }; }
   if (viewers.size >= 100){                     // full: the longest-quiet non-donor stands up
-    const quiet = [...viewers.values()].filter(x => x.coins === 0).sort((a,b) => a.lastAt - b.lastAt)[0];
-    if (!quiet) return { v:null, isNew:false };
-    viewers.delete(quiet.id); broadcast({ t:'leave', id: quiet.id });
+    return { v:null, isNew:false }; // full: do not evict verified people
   }
   v = { id, name: (name||id).slice(0, 18), skin: opts.skin || DEFAULT_SKINS[viewers.size % DEFAULT_SKINS.length],
         avatar: opts.avatar || '', coins: 0, joinedAt: Date.now(), lastAt: Date.now(), demo: !!opts.demo };
@@ -77,6 +77,7 @@ function seat(id, name, opts = {}){
 /* ------------------------------------------------------------- events in */
 function onChat(id, name, text, avatar){
   text = String(text || '').slice(0, 120);
+  if(!hybrid.gateChat(id,name,text,avatar))return; // never auto-create unapproved attendees
   const want = skinFromText(text);
   const { v, isNew } = seat(id, name, { avatar, skin: want || undefined });
   if (!v) return;
@@ -87,6 +88,7 @@ function onChat(id, name, text, avatar){
 
 function onGift(id, name, giftName, count, diamonds, avatar){
   giftName = String(giftName || 'quà').slice(0, 30); count = Math.max(1, Math.min(9999, +count || 1));
+  if(hybrid.giftForGuest(id,name,giftName,count,diamonds,avatar))return; // gift display, no wallet credit
   const { v } = seat(id, name, { avatar });
   if (!v) return;
   const coins = Math.max(1, (diamonds || 1) * (count || 1));
@@ -160,7 +162,7 @@ async function connectTikTok(uniqueId){
       onGift(d.user?.uniqueId || d.user?.userId, nm(d.user), gname, d.repeatCount || 1, dia, av(d.user));
       addLog(`🎁 ${nm(d.user)} tặng ${gname} x${d.repeatCount || 1}`);
     });
-    conn.on(WebcastEvent.MEMBER, d => { if (settings.joinOnEnter) seat(d.user?.uniqueId, nm(d.user), { avatar: av(d.user) }); });
+    conn.on(WebcastEvent.MEMBER, d => { /* entering a live does not authorize entry to the hall */ });
     conn.on(WebcastEvent.LIKE, d => broadcast({ t:'like', id: d.user?.uniqueId, n: d.likeCount || 1 }));
     conn.on(ControlEvent.DISCONNECTED, () => { tiktokState = { ...tiktokState, status: 'disconnected' }; broadcast({ t:'tiktok', ...tiktokState }); addLog('TikTok: mất kết nối'); });
     conn.on(ControlEvent.ERROR, e => addLog('TikTok lỗi: ' + (e?.info || e?.message || e)));
@@ -191,10 +193,11 @@ function clearSeats(){ viewers.clear(); broadcast(snapshot()); addLog('Đã làm
 function onControl(m){
   switch (m.cmd){
     case 'connect': connectTikTok(m.uniqueId); break;
+    case 'approveGuest': hybrid.localDecide(String(m.id||''),Boolean(m.allow)); break;
     case 'disconnect': disconnectTikTok(); addLog('Đã ngắt kết nối TikTok'); break;
-    case 'chat': { const n = String(m.name || 'Khách').slice(0, 18); onChat('sim_' + n, n, String(m.text || 'Nam mô A Di Đà Phật').slice(0, 120)); break; }
-    case 'gift': { const n = String(m.name || 'Khách').slice(0, 18); onGift('sim_' + n, n, String(m.gift || 'Hoa hồng').slice(0, 30), clamp(m.count, 1, 99), clamp(m.diamonds, 1, 50000)); break; }
-    case 'fill': fillDemo(clamp(m.n, 1, 100)); addLog(`Đổ người mẫu: ${viewers.size} người`); break;
+    case 'chat': addLog('Không mô phỏng người giả.'); break;
+    case 'gift': addLog('Không mô phỏng quà từ người giả.'); break;
+    case 'fill': addLog('Không tạo nhân vật mẫu: chỉ người thật.'); break;
     case 'clear': clearSeats(); break;
     case 'bell': broadcast({ t:'bell' }); break;
     case 'mo': broadcast({ t:'mo1' }); break;
@@ -203,7 +206,7 @@ function onControl(m){
     case 'settings':
       applySettings(m.settings || {});
       scheduleChant(); broadcast({ t:'settings', settings, cap: capacity() }); break;
-    case 'bots': setBots(!!m.on, +m.n || 12, m.pace); break;
+    case 'bots': addLog('Bot giả đã vô hiệu hóa.'); break;
   }
 }
 
@@ -212,7 +215,7 @@ const SETTING_RULES = {
   title: v => String(v).slice(0, 40), subtitle: v => String(v).slice(0, 60),
   voice: v => ['vi-VN-NamMinhNeural', 'vi-VN-HoaiMyNeural'].includes(v) ? v : settings.voice,
   pitch: v => clamp(v, -50, 50), rate: v => clamp(v, -50, 50), moBpm: v => clamp(v, 20, 120), chantEveryMin: v => clamp(v, 1, 60),
-  music: Boolean, mo: Boolean, autoChant: Boolean, joinOnEnter: Boolean,
+  music: Boolean, mo: Boolean, autoChant: Boolean, joinOnEnter: () => false,
   seatMode: v => ['auto', '24', '36', '64', '100'].includes(String(v)) ? String(v) : 'auto',
 };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, Math.round(+v || 0)));
@@ -252,7 +255,7 @@ function setBots(on, n, pace){
 //    same browser cannot send control commands
 //  • static files: only /assets and /live, no dot-files, no node_modules, no server source, no path escapes
 //  • no TikTok password, cookie or session is ever used or stored; only public room events are read
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = '127.0.0.1'; // local control is not exposed publicly
 const MIME = { '.html':'text/html; charset=utf-8', '.js':'text/javascript', '.css':'text/css', '.json':'application/json',
   '.png':'image/png', '.jpg':'image/jpeg', '.webp':'image/webp', '.mp3':'audio/mpeg', '.svg':'image/svg+xml', '.ico':'image/x-icon' };
 const ALLOWED_HOSTS = new Set([`localhost:${PORT}`, `127.0.0.1:${PORT}`, `[::1]:${PORT}`]);
