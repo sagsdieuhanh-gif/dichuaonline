@@ -1,3 +1,7 @@
+> **NHÁNH PHÁT TRIỂN — Chánh Điện người thật (01/11/2026):** Quy trình tham gia của nhánh này đã thay đổi so với bản mã gốc: **mọi bình luận có nội dung** từ TikTok LIVE hoặc cổng web riêng đều được đưa vào **hàng chờ**; **chỉ Trụ trì duyệt** mới có nhân vật xuất hiện. Không có nhân vật mẫu/bot; tối đa 100 vị trí. Không đăng ký. Quà TikTok không cộng coin nội bộ. Xem [hướng dẫn máy phát + cổng khách web](LIVE-WEB-ENTRY-SETUP.md) và [quy trình duyệt](JOIN-NO-ACCOUNT.md). **Chưa deploy lên `main` hay cung cấp public endpoint cố định; máy phát và HTTPS tunnel phải chạy để nhận bình luận trực tiếp.**
+
+---
+
 # Chánh Điện Tịnh Tâm
 
 Chánh điện online 2.5D cho TikTok LIVE. Mỗi người xem bình luận là bước vào chánh điện, ngồi xuống bồ đoàn tụng kinh. Ai tặng quà sẽ được xướng tên hồi hướng bằng giọng đọc tiếng Việt. Có nhạc thiền, chuông, mõ và đọc kinh định kỳ.
