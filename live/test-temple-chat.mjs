@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {createTempleChat} from './temple-chat.mjs';
+const allowed=new Set(['web:user1','tiktok:user2']);
+const emitted=[];let now=Date.parse('2026-11-01T00:00:00Z');
+const chat=createTempleChat({isApproved:id=>allowed.has(id),broadcast:(m,to)=>emitted.push({m,to}),clock:()=>now,limit:80});
+const web=chat.post({id:'web:user1',name:'Minh An',group:'internal',source:'web',text:'Nam mô A Di Đà Phật 🙏'});
+assert.equal(web.ok,true);
+const tik=chat.post({id:'tiktok:user2',name:'Trung Kiên',group:'tiktok',source:'tiktok',text:'Chào mọi người trong chánh điện'});
+assert.equal(tik.ok,true);
+assert.equal(chat.list().messages.length,2);
+assert.deepEqual(chat.list().messages.map(m=>m.source),['web','tiktok']);
+assert.ok(!('userId' in chat.list().messages[0]),'Participant IDs not exposed to public');
+assert.ok('userId' in chat.forAdmin().messages[0],'Control receives sender ID for moderation');
+assert.equal(emitted.filter(x=>x.m.t==='chat').length,2,'Both sources draw shared temple chat bubble');
+assert.equal(emitted.filter(x=>x.m.t==='room_chat').every(x=>x.to==='control'),true);
+assert.equal(chat.post({id:'unapproved',name:'Lạ',text:'Xin vô'}).reason,'not-approved');
+assert.equal(chat.post({id:'web:user1',name:'Minh An',text:'Spam'}).reason,'rate-limit');
+now+=4000;
+const xss=chat.post({id:'web:user1',name:'Minh An',text:'<script>alert(1)</script> Xin chào'});
+assert.equal(xss.ok,true);assert.equal(xss.message.text,'scriptalert(1)/script Xin chào');
+chat.mute('web:user1',true);
+now+=4000;
+assert.equal(chat.post({id:'web:user1',name:'Minh An',text:'Đã bị khóa'}).reason,'muted');
+assert.equal(chat.list().messages.length,3,'Muted still sees history');
+chat.mute('web:user1',false);
+assert.equal(chat.remove(web.message.seq),true);
+assert.equal(chat.list().messages.some(m=>m.seq===web.message.seq),false);
+assert.equal(chat.remove(-1),false);
+for(let i=0;i<120;i++){
+ now+=4000;
+ assert.equal(chat.post({id:'tiktok:user2',name:'Trung Kiên',source:'tiktok',text:'Thông điệp '+i}).ok,true);
+}
+assert.equal(chat.list().messages.length,80,'Bounded history for 100 active visitors');
+chat.clear();assert.equal(chat.list().messages.length,0);
+assert.ok(emitted.some(x=>x.m.t==='chat_cleared'&&x.to==='control'));
+console.log('PASS: cross-channel web + TikTok chat, no unapproved entry, identity privacy, mute, delete, spam limit and bounded history');
