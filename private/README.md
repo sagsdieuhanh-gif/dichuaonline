@@ -1,5 +1,8 @@
 # Chánh Điện nội bộ + TikTok LIVE
 
+> **Trạng thái Supabase — 01/11/2026:** Đã được Trụ trì đồng ý tạo dự án riêng `CHANH-DIEN-NOI-BO-TIKTOK` tại tổ chức `sagsdieuhanh-5329's projects` (Singapore). Supabase báo giá tạo dự án **0 USD/tháng** nhưng **từ chối** do chủ tài khoản đã đạt giới hạn 2 dự án miễn phí đang hoạt động. **Không có dự án mới nào được tạo.** Chưa cấu hình `private/config.js` hoặc áp dụng SQL lên các cơ sở dữ liệu SAGS. Cần giải quyết giới hạn số lượng dự án trước khi triển khai thật. Không tạm dừng/xóa hoặc sử dụng lại database SAGS nếu chưa được yêu cầu cụ thể.
+
+
 TRẠNG THÁI: Nhánh thử nghiệm. Chưa triển khai main và chưa tạo Supabase riêng.
 
 ## Hai nhóm dùng chung 100 chỗ
