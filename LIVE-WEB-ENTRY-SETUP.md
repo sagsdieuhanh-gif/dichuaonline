@@ -53,3 +53,13 @@ Lệnh in ra một URL HTTPS `https://...trycloudflare.com`. Chỉ chia sẻ URL
 - Có giới hạn hàng chờ **300 yêu cầu** để tránh tràn bộ nhớ. Khách bình luận lặp lại chỉ có **một** yêu cầu chờ.
 - Yêu cầu, phiên, phân loại và trạng thái ghế đang lưu **trong RAM** của máy phát, sẽ mất khi khởi động lại. Không có cơ sở dữ liệu Supabase riêng vì tổ chức đã dùng hết hai suất project miễn phí. Tuyệt đối không tái sử dụng cơ sở dữ liệu SAGS.
 - Đây chưa phải hệ thống chịu tải cao cho 100 người duy trì liên tục; cần kiểm thử thực tế và cấu hình thêm bảo vệ chống spam trước khi livestream công khai rộng rãi.
+
+## Chat chung dành cho người đã được duyệt
+
+- Khi Trụ trì bấm duyệt, người vào chánh điện bằng **website** sẽ thấy thẻ **💬 Phòng chat chung** để trò chuyện, gửi lời chào, lời niệm Phật hoặc phản hồi nhau. Hệ thống làm mới tin nhắn sau khoảng **2,8 giây**.
+- Người đã được duyệt qua **TikTok LIVE** bình luận trong livestream thì nội dung cũng xuất hiện tại phòng chat trên web và hiển thị thành bong bóng trong overlay.
+- Mọi người trong phòng được đọc các tin nhắn gần nhất; chỉ **80 tin mới nhất** được giữ trên máy phát trong RAM. Người chưa được duyệt không đọc hoặc gửi chat.
+- Trụ trì sử dụng bảng quản trị **cổng localhost:3000** để **xóa từng tin**, **xóa toàn bộ** và **tắt/bật lại chat của từng người**. Cổng công khai **3001** không có API kiểm duyệt, không thể sửa tin người khác.
+- Có hạn chế gửi liên tục (web ~3,5 giây, TikTok ~1,6 giây / tin) và nội dung tối đa 160 ký tự; tin được hiển thị dạng văn bản thường để tránh chèn mã HTML.
+- Chat là **công khai với các thành viên đã được duyệt trong phòng**, không phải tin nhắn riêng. Không gửi dữ liệu cá nhân, số điện thoại, mã truy cập, thông tin thanh toán hoặc nội dung nhạy cảm.
+- Chat **không được lưu vĩnh viễn**, mất khi khởi động lại máy chủ LIVE. Người dùng không có tài khoản nên việc một người đổi thiết bị/đổi tên có thể tạo định danh mới; Trụ trì kiểm tra khi duyệt.
