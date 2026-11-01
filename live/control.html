@@ -71,6 +71,12 @@ button.red{background:var(--red);border-color:#b84a33}
     <div id="guestRequests">Chưa có ai xin vào chùa.</div>
     <p class="hint">Không có người mẫu hoặc bot trong chánh điện thật.</p>
   </section>
+  <section class="card">
+    <h2>💬 Chat chung · Kiểm duyệt của Trụ trì</h2>
+    <p class="hint">Các tin nhắn từ người đã được duyệt trên web và TikTok LIVE. Chỉ Trụ trì trên máy phát được xóa, khóa hoặc mở lại quyền chat.</p>
+    <div class="row"><span class="chip" id="chatCount">0 tin</span><button id="btnChatClear" class="red" type="button">Xóa toàn bộ tin nhắn</button></div>
+    <div id="modChat" style="max-height:350px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:10px" aria-live="polite">Chưa có tin nhắn.</div>
+  </section>
   <section class="card" id="simulator">
     <h2>Chế độ mô phỏng (đã khóa)</h2>
     <label for="simName">Tên người xem</label>
@@ -153,6 +159,25 @@ function setTT(st){
   el.textContent = st.status==='connected' ? `TikTok: @${st.uniqueId} ✓` : st.status==='connecting' ? `TikTok: đang kết nối @${st.uniqueId}…` : st.status==='error' ? 'TikTok: lỗi kết nối' : 'TikTok: chưa kết nối';
 }
 const pendingUsers=new Map();let dbMode=false;
+const roomMessages=[],mutedUsers=new Set();
+function renderChat(){
+ const root=$('modChat');root.replaceChildren();$('chatCount').textContent=roomMessages.length+' tin';
+ if(!roomMessages.length){root.textContent='Chưa có tin nhắn.';return}
+ for(const m of roomMessages.slice(-80)){
+  const wrapper=document.createElement('div');wrapper.style.cssText='padding:8px 0;border-bottom:1px solid var(--line)';
+  const title=document.createElement('div');title.style.cssText='color:var(--gold);font-size:12px';
+  title.textContent=m.name+' · '+(m.source==='tiktok'?'TikTok':'Web')+' · '+new Date(m.at).toLocaleTimeString('vi-VN');
+  const body=document.createElement('div');body.textContent=m.text;body.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;margin:5px 0';
+  const actions=document.createElement('div');actions.className='row tight';
+  const del=document.createElement('button');del.type='button';del.textContent='Xóa tin';del.onclick=()=>send('chatDelete',{seq:m.seq});
+  const mute=document.createElement('button');mute.type='button';mute.textContent=mutedUsers.has(m.userId)?'Bật lại chat':'Tắt chat';
+  mute.onclick=()=>send('chatMute',{id:m.userId,muted:!mutedUsers.has(m.userId)});
+  actions.append(del,mute);wrapper.append(title,body,actions);root.append(wrapper);
+ }
+ root.scrollTop=root.scrollHeight;
+}
+$('btnChatClear').onclick=()=>{if(confirm('Xóa toàn bộ tin nhắn phòng chat đang lưu trên máy phát?'))send('chatClear')};
+
 function renderRequests(){
  const list=$('guestRequests');list.replaceChildren();
  if(!pendingUsers.size){list.textContent='Chưa có yêu cầu. Bất kỳ bình luận có nội dung nào đều được đưa vào hàng chờ duyệt.';return;}
@@ -181,6 +206,11 @@ function connect(){
     else if (m.t==='join'){ people.set(m.v.id,m.v); renderPeople(); }
     else if (m.t==='leave'){ people.delete(m.id); renderPeople(); }
     else if (m.t==='gift'){ const p=people.get(m.id); if(p){p.liveGifts=m.liveTotal||0;renderPeople();} }
+    else if (m.t==='chat_state'){roomMessages.splice(0,roomMessages.length,...m.messages);mutedUsers.clear();(m.muted||[]).forEach(id=>mutedUsers.add(id));renderChat();}
+    else if (m.t==='room_chat'){roomMessages.push(m.message);if(roomMessages.length>80)roomMessages.shift();renderChat();}
+    else if (m.t==='chat_removed'){const i=roomMessages.findIndex(x=>x.seq===m.seq);if(i>=0)roomMessages.splice(i,1);renderChat();}
+    else if (m.t==='chat_cleared'){roomMessages.splice(0);renderChat();}
+    else if (m.t==='chat_mute'){m.muted?mutedUsers.add(m.id):mutedUsers.delete(m.id);renderChat();}
     else if (m.t==='guest_request'){pendingUsers.set(m.guest.id,m.guest);renderRequests();}
     else if (m.t==='admission_group'){ const p=people.get(m.id);if(p){p.group=m.group;renderPeople();} }
     else if(m.t==='guest_decision'){pendingUsers.delete(m.id);renderRequests();}
