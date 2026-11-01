@@ -1,0 +1,41 @@
+name: Verify hybrid temple (branch only)
+on:
+  push:
+    branches:
+      - feature/private-temple-100-coins
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --version
+          node --check live/server.mjs
+          node --check live/temple-hybrid.mjs
+          cp private/app.js /tmp/temple-internal-app.mjs
+          node --check /tmp/temple-internal-app.mjs
+      - name: Verify security invariants and deliverables
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          server=Path('live/server.mjs').read_text()
+          bridge=Path('live/temple-hybrid.mjs').read_text()
+          sql=Path('private/schema.sql').read_text()
+          html=Path('private/index.html').read_text()
+          app=Path('private/app.js').read_text()
+          assert 'createHybrid' in server
+          assert 'hybrid.gateChat' in server and 'hybrid.giftForGuest' in server
+          assert 'Không tạo nhân vật mẫu' in server
+          assert 'TEMPLE_DB_SECRET' in bridge and 'approveGuest' in server
+          assert 'temple_admin_tiktok_decide' in sql and 'temple_admin_grant' in sql
+          assert 'temple_join()' in sql and 'row level security' in sql.lower()
+          assert 'auth.signInWithPassword' in app and 'temple_spend' in app
+          assert 'TIKTOK' in html.upper()
+          assert not Path('private/config.js').read_text().strip().endswith('service_role')
+          print('Hybrid static checks passed; DB/LIVE integration still requires setup.')
+          PY
