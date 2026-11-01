@@ -20,7 +20,10 @@ export function createHybrid({viewers,seat,broadcast,log}){
    if(!id||String(id).startsWith('sim_'))return false;
    const guest=record(id,name,avatar);
    if(approved.has(guest.id))return true;
-   if(/xin\s+vào\s+(?:chùa|chánh\s+điện)/iu.test(String(comment||''))){
+   // Both colleagues and TikTok guests use the same comment-only invitation.
+   // Accent-insensitive: "xin vô", "xin vào", "xin vào chùa", "xin vo", etc.
+   const words=String(comment||'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
+   if(/\bxin\s+(?:vo|vao)(?:\s+(?:chua|chanh\s+dien))?\b/u.test(words)){
      const entry={...guest,comment:String(comment).slice(0,240)};
      if(!pending.has(guest.id))broadcast({t:'guest_request',guest:entry},'control');
      pending.set(guest.id,entry);log('TikTok xin vào chùa: '+entry.name);
@@ -39,15 +42,15 @@ export function createHybrid({viewers,seat,broadcast,log}){
    const guest=record(id,name,avatar);
    if(approved.has(guest.id))return false;
    const points=Math.max(1,(Number(diamonds)||1)*(Number(count)||1));
-   broadcast({t:'gift',id,name:String(name).slice(0,40),giftName,count,coins:points,total:points,tier:points>=99?3:points>=10?2:1,prayer:'Cảm ơn đã ủng hộ buổi LIVE'});
+   broadcast({t:'gift',id,name:String(name).slice(0,40),giftName,count,giftValue:points,liveTotal:points,tier:points>=99?3:points>=10?2:1,prayer:'Cảm ơn đã ủng hộ buổi LIVE'});
    return true;
  }
- function localDecide(id,allow){
+ function localDecide(id,allow,group='tiktok'){
    if(dbEnabled){log('Cần duyệt TikTok trong trang quản trị nội bộ đã đăng nhập.');return;}
    const g=pending.get(id);if(!g)return;
    if(allow){
      if(viewers.size>=100){log('Đã đủ 100 vị trí.');return;}
-     approved.add(id);seat(id,g.name,{avatar:g.avatar});
+     approved.add(id);const admission=seat(id,g.name,{avatar:g.avatar}); if(admission.v){admission.v.group=group==='internal'?'internal':'tiktok'; broadcast({t:'admission_group',id,group:admission.v.group},'control');}
    } else {approved.delete(id);remove(id);}
    pending.delete(id);broadcast({t:'guest_decision',id,allowed:allow},'control');
    log((allow?'Trụ trì đã duyệt: ':'Trụ trì đã từ chối: ')+g.name);
