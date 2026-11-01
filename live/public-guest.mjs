@@ -16,10 +16,10 @@ function cookies(header){return Object.fromEntries(String(header||'').split(';')
 function json(res,status,data,extra={}){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...extra});res.end(JSON.stringify(data));}
 function getBody(req){return new Promise((resolve,reject)=>{let body='';req.on('data',part=>{body+=part;if(body.length>MAX_BODY){reject(Error('too-large'));req.destroy();}});req.on('end',()=>{try{resolve(JSON.parse(body||'{}'))}catch{reject(Error('invalid-json'))}});req.on('error',reject);});}
 
-export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=3001,host='127.0.0.1'}){
- if(!hybrid||!viewers||!broadcast)throw Error('Missing shared LIVE state');
+export function createGuestGateway({hybrid,viewers,chat,broadcast,log=()=>{},port=3001,host='127.0.0.1'}){
+ if(!hybrid||!viewers||!chat||!broadcast)throw Error('Missing shared LIVE state');
  const sessions=new Map();
- const allowedPath=new Set(['/','/visit','/api/me','/api/join','/api/ping','/api/message','/api/leave','/api/hall','/visit.js','/assets/hall.jpg','/assets/c_man.png','/assets/c_woman.png']);
+ const allowedPath=new Set(['/','/visit','/api/me','/api/join','/api/ping','/api/message','/api/chat','/api/leave','/api/hall','/visit.js','/assets/hall.jpg','/assets/c_man.png','/assets/c_woman.png']);
  const sweep=setInterval(()=>{
   const now=Date.now();
   for(const [token,s] of sessions){
@@ -87,6 +87,11 @@ export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=300
    return {name:session.name,status:seated?'approved':hybrid.pending.has(id)?'pending':session.lastJoin?(session.left?'left':'not-approved'):'new',seatCount:viewers.size,capacity:100,group:viewers.get(id)?.group||null};
   }
   if(pathname==='/api/me'){if(hybrid.approved.has(id)&&viewers.has(id))session.lastPing=Date.now();json(res,200,state());return}
+  if(pathname==='/api/chat'){
+   if(req.method!=='GET'){json(res,405,{error:'method'});return}
+   if(!hybrid.approved.has(id)||!viewers.has(id)){json(res,403,{error:'Chưa được Trụ trì duyệt vào phòng chat'});return}
+   json(res,200,{...chat.list(),muted:chat.isMuted(id)});return;
+  }
   if(req.method!=='POST'){json(res,405,{error:'method'});return}
   let data;try{data=await getBody(req)}catch{json(res,400,{error:'invalid-body'});return}
   if(pathname==='/api/join'){
@@ -106,10 +111,10 @@ export function createGuestGateway({hybrid,viewers,broadcast,log=()=>{},port=300
    const message=String(data.text||'').trim().replace(/[<>\u0000-\u001f]/g,'').slice(0,110);
    if(!viewers.has(id)||!hybrid.approved.has(id)){json(res,403,{error:'Chưa được duyệt'});return}
    if(message.length<2){json(res,400,{error:'Nội dung quá ngắn'});return}
-   if(session.lastMessage&&Date.now()-session.lastMessage<4000){json(res,429,{error:'Gửi quá nhanh'});return}
-   session.lastMessage=Date.now();session.lastPing=Date.now();
-   broadcast({t:'chat',id,name:session.name,text:message});
-   json(res,200,{sent:true});return;
+   const result=chat.post({id,name:session.name,text:message,group:viewers.get(id).group,source:'web'});
+   if(!result.ok){const status=result.reason==='rate-limit'?429:result.reason==='muted'?403:400;json(res,status,{error:result.reason==='rate-limit'?'Vui lòng gửi chậm lại':result.reason==='muted'?'Trụ trì đã tạm khóa quyền chat':'Không thể gửi tin nhắn'});return}
+   session.lastPing=Date.now();
+   json(res,200,{sent:true,message:result.message});return;
   }
   if(pathname==='/api/leave'){
    hybrid.approved.delete(id);hybrid.pending.delete(id);session.left=true;
